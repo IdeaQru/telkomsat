@@ -1,0 +1,82 @@
+<!-- map.html -->
+<div class="app-container">
+  <!-- ✅ DIRECT BINDING to VesselService - NO local state interference -->
+  <app-vessel-loading 
+    *ngIf="vesselService.loadingState$ | async as loadingState"
+    [loadingState]="loadingState"
+    (retry)="onRetryConnection()"
+    (refresh)="onRefreshData()">
+  </app-vessel-loading>
+  
+
+
+  <!-- Sidenav container -->
+  <mat-sidenav-container class="map-container">
+    
+    <!-- Status bar -->
+    <div class="status-bar" *ngIf="vesselCount > 0">
+      <div class="status-item">
+        <mat-icon>directions_boat</mat-icon>
+        <span>{{ vesselCount }} Vessels</span>
+      </div>
+      <div class="status-item">
+        <mat-icon>business</mat-icon>
+        <span>{{ vtsCount }} VTS</span>
+      </div>
+      <div class="status-item">
+        <mat-icon>place</mat-icon>
+        <span>{{ atonCount }} AtoN</span>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <mat-sidenav #sidebar 
+                 mode="side" 
+                 [opened]="sidebarOpen"
+                 class="map-sidebar">
+      <!-- Your existing sidebar content -->
+      <div class="sidebar-content">
+        <h3>Map Controls</h3>
+        
+        <!-- Layer selection -->
+        <div class="section">
+          <h4>Map Layers</h4>
+          <div *ngFor="let layer of mapService.layers" class="layer-item">
+            <button (click)="selectLayer(layer.name)" 
+                    [class.active]="layer.name === mapService.activeLayer">
+              {{ layer.name }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- Visibility controls -->
+        <div class="section">
+          <h4>Data Visibility</h4>
+          <mat-slide-toggle [(ngModel)]="vtsVisible" 
+                           (change)="toggleVtsVisibility()">
+            VTS Stations ({{ vtsCount }})
+          </mat-slide-toggle>
+          <br>
+          <mat-slide-toggle [(ngModel)]="atonVisible" 
+                           (change)="toggleAtonVisibility()">
+            AtoN Markers ({{ atonCount }})
+          </mat-slide-toggle>
+        </div>
+      </div>
+    </mat-sidenav>
+
+    <!-- Main content -->
+    <mat-sidenav-content class="map-content">
+      <div id="map" class="map-view"></div>
+      
+      <!-- Toggle button -->
+      <button mat-fab 
+              color="primary" 
+              class="sidebar-toggle-btn" 
+              (click)="toggleSidebar()" 
+              *ngIf="!sidebarOpen">
+        <mat-icon>menu</mat-icon>
+      </button>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

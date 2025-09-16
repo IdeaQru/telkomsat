@@ -1,0 +1,117 @@
+<!-- ✅ PERBAIKAN: Tambahkan null safety untuk loadingState -->
+<div class="vessel-loading-overlay" 
+     *ngIf="loadingState"
+     [class.hidden]="shouldHideLoading"
+     [style.display]="shouldHideLoading ? 'none' : 'flex'">
+  
+  <div class="loading-container">
+  
+    <!-- Maritime Loading Animation -->
+    <div class="loading-animation" *ngIf="loadingState.isLoading">
+      <div class="ship-container">
+        <div class="ship">🚢</div>
+        <div class="waves">
+          <div class="wave"></div>
+          <div class="wave wave-delay-1"></div>
+          <div class="wave wave-delay-2"></div>
+        </div>
+      </div>
+      
+      <!-- Radar Animation -->
+      <div class="radar-container">
+        <div class="radar-sweep"></div>
+        <div class="radar-dot radar-dot-1"></div>
+        <div class="radar-dot radar-dot-2"></div>
+        <div class="radar-dot radar-dot-3"></div>
+      </div>
+    </div>
+
+    <!-- Loading Info -->
+    <div class="loading-info">
+      <h3 class="loading-title">
+        <mat-icon class="title-icon">anchor</mat-icon>
+        Vessel Tracking System
+      </h3>
+      
+      <div class="loading-message">{{ loadingState.message || 'Loading...' }}</div>
+      
+      <!-- ✅ PERBAIKAN Progress Bar dengan helper method -->
+      <div class="progress-container" *ngIf="loadingState.isLoading">
+        <div class="progress-bar">
+          <div class="progress-fill" 
+               [style.width]="getProgressWidth()"
+               [attr.data-progress]="floorValue(loadingState.progress)">
+            <div class="progress-glow"></div>
+          </div>
+        </div>
+        <!-- ✅ PERBAIKAN: Gunakan helper method floorValue -->
+        <div class="progress-text">{{ floorValue(loadingState.progress || 0) }}%</div>
+      </div>
+
+      <!-- Status Indicators -->
+      <div class="status-indicators" *ngIf="loadingState.isLoading">
+        <div class="status-item" [class.active]="floorValue(loadingState.progress || 0) >= 25">
+          <mat-icon class="status-icon">satellite_alt</mat-icon>
+          <span class="status-label">Satellite</span>
+        </div>
+        <div class="status-item" [class.active]="floorValue(loadingState.progress || 0) >= 50">
+          <mat-icon class="status-icon">waves</mat-icon>
+          <span class="status-label">Maritime</span>
+        </div>
+        <div class="status-item" [class.active]="floorValue(loadingState.progress || 0) >= 75">
+          <mat-icon class="status-icon">analytics</mat-icon>
+          <span class="status-label">Tracking</span>
+        </div>
+        <div class="status-item" [class.active]="floorValue(loadingState.progress || 0) >= 100">
+          <mat-icon class="status-icon">check_circle</mat-icon>
+          <span class="status-label">Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success State -->
+    <div class="success-container" *ngIf="!loadingState.isLoading && loadingState.hasData && !loadingState.error">
+      <div class="success-content">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <div class="success-message">{{ loadingState.message }}</div>
+        <!-- ✅ PERBAIKAN: Gunakan helper method extractVesselCount -->
+        <div class="vessel-count">{{ extractVesselCount(loadingState.message || '') }} vessels loaded</div>
+        <!-- ✅ TAMBAHKAN: Last update time -->
+        <div class="last-update" *ngIf="loadingState.lastUpdate">
+          Last updated: {{ getTimeAgo(loadingState.lastUpdate) }}
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- No Data State -->
+    <div class="no-data-container" *ngIf="!loadingState.isLoading && !loadingState.hasData && !loadingState.error">
+      <div class="no-data-content">
+        <mat-icon class="no-data-icon">search_off</mat-icon>
+        <div class="no-data-title">No Vessels Detected</div>
+        <div class="no-data-message">No vessels found in the current area</div>
+        <div class="no-data-suggestions">
+          <p>Try:</p>
+          <ul>
+            <li>Zooming out to see a larger area</li>
+            <li>Moving to a different maritime region</li>
+            <li>Refreshing the vessel data</li>
+          </ul>
+        </div>
+        <button mat-raised-button color="accent" class="action-button" (click)="onRefresh()">
+          <mat-icon>radar</mat-icon>
+          Scan Again
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ TAMBAHKAN: Fallback jika loadingState null -->
+<div class="loading-fallback" *ngIf="!loadingState">
+  <div class="fallback-content">
+    <mat-icon>warning</mat-icon>
+    <span>Loading system initializing...</span>
+  </div>
+</div>

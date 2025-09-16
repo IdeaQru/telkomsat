@@ -1,0 +1,357 @@
+.vessel-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #670326 0%, #852980 50%, #d9468d 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+
+  &.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    display: none !important; // ✅ Force hide
+  }
+}
+
+.loading-container {
+  text-align: center;
+  color: white;
+  max-width: 500px;
+  padding: 40px;
+}
+
+/* Ship Animation */
+.ship-container {
+  position: relative;
+  margin-bottom: 40px;
+  height: 100px;
+}
+
+.ship {
+  font-size: 60px;
+  animation: shipFloat 3s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+.waves {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 30px;
+}
+
+.wave {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+  border-radius: 50px;
+  animation: waveMotion 2s ease-in-out infinite;
+
+  &.wave-delay-1 {
+    animation-delay: 0.5s;
+    opacity: 0.7;
+  }
+
+  &.wave-delay-2 {
+    animation-delay: 1s;
+    opacity: 0.4;
+  }
+}
+
+/* Radar Animation */
+.radar-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 30px;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+}
+
+.radar-sweep {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
+  animation: radarSweep 2s linear infinite;
+}
+
+.radar-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #60A5FA;
+  border-radius: 50%;
+  animation: radarPulse 2s ease-in-out infinite;
+
+  &.radar-dot-1 {
+    top: 30%;
+    left: 60%;
+    animation-delay: 0s;
+  }
+
+  &.radar-dot-2 {
+    top: 60%;
+    left: 40%;
+    animation-delay: 0.7s;
+  }
+
+  &.radar-dot-3 {
+    top: 45%;
+    left: 70%;
+    animation-delay: 1.4s;
+  }
+}
+
+/* Loading Info */
+.loading-info {
+  margin-bottom: 32px;
+}
+
+.loading-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  .title-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.loading-message {
+  font-size: 16px;
+  color: #94A3B8;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+/* Progress Bar */
+.progress-container {
+  margin-bottom: 32px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  transition: width 0.8s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-glow {
+  position: absolute;
+  top: 0;
+  right: -20px;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8));
+  animation: progressGlow 1.5s ease-in-out infinite;
+}
+
+.progress-text {
+  font-size: 14px;
+  color: #CBD5E1;
+  font-weight: 600;
+}
+
+/* Status Indicators */
+.status-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.4;
+  transition: opacity 0.5s ease, transform 0.3s ease;
+
+  &.active {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  .status-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .status-label {
+    font-size: 12px;
+    color: #94A3B8;
+    font-weight: 500;
+  }
+}
+
+/* Error & No Data States */
+.error-container,
+.no-data-container {
+  margin-top: 32px;
+}
+
+.error-content,
+.no-data-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.error-icon,
+.no-data-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #EF4444;
+
+  &.no-data-icon {
+    color: #94A3B8;
+  }
+}
+
+.error-message,
+.no-data-message {
+  font-size: 16px;
+  color: #94A3B8;
+  margin-bottom: 8px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Animations */
+@keyframes shipFloat {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+@keyframes waveMotion {
+  0%, 100% { transform: translateX(-100%) scaleY(1); }
+  50% { transform: translateX(100%) scaleY(1.2); }
+}
+
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes radarPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.5);
+    opacity: 0.3;
+  }
+}
+
+@keyframes progressGlow {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .loading-container {
+    padding: 20px;
+    max-width: 90vw;
+  }
+  
+  .ship {
+    font-size: 40px;
+  }
+  
+  .loading-title {
+    font-size: 20px;
+  }
+  
+  .status-indicators {
+    gap: 16px;
+  }
+}
+// vessel-loading.component.scss - TAMBAHAN
+.success-container {
+  text-align: center;
+  animation: successFadeIn 0.5s ease;
+  margin-top: 32px;
+}
+
+.success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.success-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #10B981;
+}
+
+.success-message {
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+}
+
+.vessel-count {
+  font-size: 24px;
+  color: #60A5FA;
+  font-weight: bold;
+}
+
+@keyframes successFadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+

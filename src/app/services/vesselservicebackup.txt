@@ -1,0 +1,347 @@
+import { Injectable, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { WebSocketService, Vessel } from './websocket-service'; // Import Vessel, bukan AISVessel
+@Injectable({
+  providedIn: 'root'
+})
+export class VesselService implements OnDestroy {
+  private map: any;
+  private L: any;
+  private vesselMarkers: Map<number, any> = new Map();
+  private vesselLayer: any;
+  private updatesSubscription!: Subscription;
+  private connectionSubscription!: Subscription;
+  canvasRenderer: any;
+
+  constructor(private webSocketService: WebSocketService) {}
+
+public initialize(map: any, L: any): void {
+  this.map = map;
+  this.L = L;
+  
+  // Gunakan Canvas renderer untuk performa yang jauh lebih baik
+  this.canvasRenderer = this.L.canvas();
+  
+  // Create layer group dengan canvas renderer
+  this.vesselLayer = this.L.layerGroup().addTo(this.map);
+  
+  this.subscribeToVesselUpdates();
+  this.subscribeToConnectionStatus();
+  
+  console.log('🚢 VesselService initialized with Canvas renderer for better performance.');
+}
+
+
+  private subscribeToVesselUpdates(): void {
+    // Fixed: Gunakan interface Vessel yang benar
+    this.updatesSubscription = this.webSocketService.vesselUpdates$.subscribe({
+      next: (vessels: Vessel[]) => { // Ganti AISVessel[] menjadi Vessel[]
+        console.log(`[VesselService] Received ${vessels.length} vessels from WebSocketService.`);
+        
+        if (vessels.length > 0) {
+          this.updateVesselMarkers(vessels);
+        }
+      },
+      error: (err) => {
+        console.error('[VesselService] Error receiving vessel updates:', err);
+      }
+    });
+  }
+
+  private subscribeToConnectionStatus(): void {
+    // Fixed: Connection status adalah string, bukan boolean
+    this.connectionSubscription = this.webSocketService.connectionStatus$.subscribe({
+      next: (status: string) => { // Ganti boolean menjadi string
+        console.log(`[VesselService] WebSocket connection status: ${status}`);
+        
+        if (status !== 'connected') {
+          console.log('🔌 Connection lost, keeping last known vessel positions');
+        }
+      }
+    });
+  }
+
+  // Fixed: Ganti parameter menjadi Vessel[] dan property names
+  private updateVesselMarkers(vessels: Vessel[]): void {
+    if (!this.map || !this.L) return;
+
+    // Fixed: Gunakan property mmsi (lowercase)
+    const receivedMmsi = new Set(vessels.map(v => v.mmsi));
+
+    // Remove markers for vessels no longer in data
+    this.vesselMarkers.forEach((marker, mmsi) => {
+      if (!receivedMmsi.has(mmsi)) {
+        this.vesselLayer.removeLayer(marker);
+        this.vesselMarkers.delete(mmsi);
+      }
+    });
+
+    // Add or update markers
+    vessels.forEach(vessel => {
+      const existingMarker = this.vesselMarkers.get(vessel.mmsi);
+
+      if (existingMarker) {
+        // Update existing marker dengan property names yang benar
+        existingMarker.setLatLng([vessel.latitude, vessel.longitude]);
+        
+        // Update rotation if plugin is available
+        if (existingMarker.setRotationAngle) {
+          existingMarker.setRotationAngle(vessel.course || vessel.heading || 0);
+        }
+        
+        // Update popup content
+        this.updateMarkerPopup(existingMarker, vessel);
+      } else {
+        // Create new marker
+        const newMarker = this.createVesselMarker(vessel);
+        if (newMarker) {
+          this.vesselLayer.addLayer(newMarker);
+          this.vesselMarkers.set(vessel.mmsi, newMarker);
+        }
+      }
+    });
+
+    console.log(`🗺️ Map updated: ${this.vesselMarkers.size} vessels displayed.`);
+  }
+
+  // Fixed: Ganti parameter menjadi Vessel
+private createVesselMarker(vessel: Vessel): any {
+  try {
+    const rotation = vessel.heading ?? vessel.course ?? 0;
+    const iconColor = this.getVesselIconColor(vessel);
+    
+    const vesselHtml = `
+      <div class="vessel-icon vessel-${iconColor}" 
+           style="transform: rotate(${rotation}deg);"
+           data-mmsi="${vessel.mmsi}"
+           title="${vessel.name || `MMSI: ${vessel.mmsi}`}">
+        <div class="arrow-shape"></div>
+      </div>
+    `;
+
+    const vesselIcon = this.L.divIcon({
+      html: vesselHtml,
+      className: 'custom-vessel-marker',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10]
+    });
+
+    const marker = this.L.marker([vessel.latitude, vessel.longitude], {
+      icon: vesselIcon,
+      title: vessel.name || `MMSI: ${vessel.mmsi}`
+    });
+
+    marker.vesselData = vessel;
+    this.updateMarkerPopup(marker, vessel);
+
+    return marker;
+  } catch (error) {
+    console.error('Error creating vessel marker:', error);
+    return null;
+  }
+}
+
+
+  // Method untuk menentukan warna ikon berdasarkan status vessel
+private getVesselIconColor(vessel: Vessel): string {
+  const vesselType = vessel.vesselType;
+  
+  // Berdasarkan MarineTraffic color coding
+  if (vesselType >= 80 && vesselType <= 89) {
+    return 'tanker';       // RED - Tankers
+  } else if (vesselType >= 70 && vesselType <= 79) {
+    return 'cargo';        // GREEN - Cargo vessels
+  } else if (vesselType >= 60 && vesselType <= 69) {
+    return 'passenger';    // BLUE - Passenger vessels
+  } else if (vesselType >= 40 && vesselType <= 49) {
+    return 'highspeed';    // YELLOW - High-speed craft
+  } else if (vesselType >= 50 && vesselType <= 59) {
+    return 'special';      // TURQUOISE/CYAN - Special craft (Tugs & Special)
+  } else if (vesselType === 30) {
+    return 'fishing';      // ORANGE - Fishing vessels
+  } else if (vesselType >= 31 && vesselType <= 39) {
+    return 'special';      // TURQUOISE - Towing, pleasure craft, etc.
+  } else if (vesselType >= 20 && vesselType <= 29) {
+    return 'wing';         // PURPLE - Wing in ground (WIG)
+  } else if (vesselType >= 1 && vesselType <= 19) {
+    return 'reserved';     // GRAY - Reserved
+  } else {
+    return 'unknown';      // GRAY - Unknown/Not available
+  }
+}
+
+
+
+  // Method untuk mendapatkan deskripsi tipe vessel
+  private getVesselTypeDescription(vesselType: number): string {
+    const vesselTypes: { [key: number]: string } = {
+      0: 'Unknown',
+      30: 'Fishing',
+      31: 'Towing',
+      32: 'Towing (large)',
+      33: 'Dredging',
+      34: 'Diving',
+      35: 'Military',
+      36: 'Sailing',
+      37: 'Pleasure craft',
+      40: 'High-speed craft',
+      50: 'Pilot vessel',
+      51: 'Search and rescue',
+      52: 'Tug',
+      53: 'Port tender',
+      54: 'Anti-pollution',
+      55: 'Law enforcement',
+      58: 'Medical',
+      59: 'Special craft',
+      60: 'Passenger',
+      70: 'Cargo',
+      71: 'Cargo (hazardous A)',
+      72: 'Cargo (hazardous B)',
+      73: 'Cargo (hazardous C)',
+      74: 'Cargo (hazardous D)',
+      80: 'Tanker',
+      81: 'Tanker (hazardous A)',
+      82: 'Tanker (hazardous B)',
+      83: 'Tanker (hazardous C)',
+      84: 'Tanker (hazardous D)',
+      90: 'Other'
+    };
+    return vesselTypes[vesselType] || 'Unknown';
+  }
+
+  // Method untuk mendapatkan status navigasi
+  private getNavigationStatusDescription(navStatus?: number): string {
+    const navStatuses: { [key: number]: string } = {
+      0: 'Under way using engine',
+      1: 'At anchor',
+      2: 'Not under command',
+      3: 'Restricted manoeuvrability',
+      4: 'Constrained by her draught',
+      5: 'Moored',
+      6: 'Aground',
+      7: 'Engaged in fishing',
+      8: 'Under way sailing',
+      15: 'Not defined'
+    };
+    return navStatuses[navStatus || 15] || 'Not defined';
+  }
+
+  // Fixed: Ganti parameter menjadi Vessel
+  private updateMarkerPopup(marker: any, vessel: Vessel): void {
+    const vesselTypeDesc = this.getVesselTypeDescription(vessel.vesselType);
+    const navStatusDesc = this.getNavigationStatusDescription(vessel.navStatus);
+    
+    const popupContent = `
+      <div class="vessel-popup">
+        <div class="popup-header">
+          <strong>${vessel.name || 'Unknown Vessel'}</strong>
+          <small class="vessel-type">(${vesselTypeDesc})</small>
+        </div>
+        <div class="popup-content">
+          <div class="popup-row">
+            <span class="label">MMSI:</span>
+            <span class="value">${vessel.mmsi}</span>
+          </div>
+          <div class="popup-row">
+            <span class="label">Call Sign:</span>
+            <span class="value">${vessel.callSign || 'N/A'}</span>
+          </div>
+          <div class="popup-row">
+            <span class="label">Speed:</span>
+            <span class="value">${vessel.speed?.toFixed(1) || '0'} knots</span>
+          </div>
+          <div class="popup-row">
+            <span class="label">Course:</span>
+            <span class="value">${vessel.course?.toFixed(0) || '0'}°</span>
+          </div>
+          ${vessel.heading ? `
+          <div class="popup-row">
+            <span class="label">Heading:</span>
+            <span class="value">${vessel.heading.toFixed(0)}°</span>
+          </div>
+          ` : ''}
+          <div class="popup-row">
+            <span class="label">Status:</span>
+            <span class="value">${navStatusDesc}</span>
+          </div>
+          <div class="popup-row">
+            <span class="label">Destination:</span>
+            <span class="value">${vessel.destination || 'N/A'}</span>
+          </div>
+          <div class="popup-row">
+            <span class="label">Last Update:</span>
+            <span class="value">${new Date(vessel.timestamp).toLocaleString()}</span>
+          </div>
+          <div class="popup-row">
+            <span class="label">Position:</span>
+            <span class="value">${vessel.latitude.toFixed(4)}°, ${vessel.longitude.toFixed(4)}°</span>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    marker.bindPopup(popupContent);
+  }
+
+  // Public methods
+  public getVesselCount(): number {
+    return this.vesselMarkers.size;
+  }
+
+  public isWebSocketConnected(): boolean {
+    return this.webSocketService.isConnected();
+  }
+
+  // Method untuk focus pada vessel tertentu
+  public focusOnVessel(mmsi: number): void {
+    const marker = this.vesselMarkers.get(mmsi);
+    if (marker && this.map) {
+      this.map.setView(marker.getLatLng(), 12);
+      marker.openPopup();
+    }
+  }
+
+  // Method untuk filter vessel berdasarkan tipe
+  public filterVesselsByType(vesselType?: number): void {
+    this.vesselMarkers.forEach((marker, mmsi) => {
+      const vessel = marker.options.vessel; // Anda perlu menyimpan data vessel di marker
+      if (vesselType === undefined || vessel?.vesselType === vesselType) {
+        marker.setOpacity(1);
+      } else {
+        marker.setOpacity(0.3);
+      }
+    });
+  }
+
+  // Method untuk filter vessel berdasarkan kecepatan
+  public filterVesselsBySpeed(minSpeed: number, maxSpeed: number): void {
+    this.vesselMarkers.forEach((marker) => {
+      const vessel = marker.options.vessel;
+      if (vessel && vessel.speed >= minSpeed && vessel.speed <= maxSpeed) {
+        marker.setOpacity(1);
+      } else {
+        marker.setOpacity(0.3);
+      }
+    });
+  }
+
+  public cleanup(): void {
+    if (this.updatesSubscription) {
+      this.updatesSubscription.unsubscribe();
+    }
+    if (this.connectionSubscription) {
+      this.connectionSubscription.unsubscribe();
+    }
+    if (this.map && this.vesselLayer) {
+      this.vesselLayer.clearLayers();
+      this.map.removeLayer(this.vesselLayer);
+    }
+    this.vesselMarkers.clear();
+    console.log('🚢 VesselService cleaned up.');
+  }
+
+  ngOnDestroy(): void {
+    this.cleanup();
+  }
+}

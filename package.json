@@ -5,9 +5,17 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --output-path=../ais-maritime-backend/my-leaflet-map --configuration production",
+    "build:watch": "ng build --watch --configuration development",
+    "build:ssr": "ng build --configuration=production && npm run build:server",
+    "build:server": "ng build --configuration=production --output-hashing=none",
+    "serve:ssr": "node dist/my-leaflet-map/server/server.mjs",
+    "serve:static": "npx serve dist/my-leaflet-map/browser -s -p 4200",
+    "preview": "npm run build:prod && npm run serve:static",
+    "preview:ssr": "npm run build:ssr && npm run serve:ssr",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:my-leaflet-map": "node dist/my-leaflet-map/server/server.mjs"
+    "deploy": "npm run build:prod && echo '✅ Angular built successfully!' && cd ../ais-maritime-backend && npm start"
   },
   "prettier": {
     "printWidth": 100,
@@ -21,18 +29,30 @@
       }
     ]
   },
-  "private": true,
   "dependencies": {
+    "@angular/cdk": "^20.2.0",
     "@angular/common": "^20.1.0",
     "@angular/compiler": "^20.1.0",
     "@angular/core": "^20.1.0",
     "@angular/forms": "^20.1.0",
+    "@angular/material": "^20.2.0",
     "@angular/platform-browser": "^20.1.0",
     "@angular/platform-server": "^20.1.0",
     "@angular/router": "^20.1.0",
     "@angular/ssr": "^20.1.6",
+    "@bluehalo/ngx-leaflet": "^20.0.0",
+    "@bluehalo/ngx-leaflet-markercluster": "^20.0.3",
+    "@types/leaflet": "^1.9.20",
+    "@types/leaflet.markercluster": "^1.5.5",
+    "@types/supercluster": "^7.1.3",
     "express": "^5.1.0",
+    "leaflet": "^1.9.4",
+    "leaflet-rotatedmarker": "^0.2.0",
+    "leaflet.markercluster": "^1.5.3",
     "rxjs": "~7.8.0",
+    "server.js": "^1.0.0",
+    "socket.io-client": "^4.8.1",
+    "supercluster": "^8.0.1",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -41,6 +61,7 @@
     "@angular/compiler-cli": "^20.1.0",
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
+    "@types/leaflet-rotatedmarker": "^0.2.5",
     "@types/node": "^20.17.19",
     "jasmine-core": "~5.8.0",
     "karma": "~6.4.0",
