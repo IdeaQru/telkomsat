@@ -2,13 +2,17 @@
 
 function createDevelopmentUrls() {
   const backendPort = 3770;
-  
+  const currentOrigin = window.location.origin; // Ambil full origin (protocol + hostname + port jika ada)
+  const currentHostname = window.location.hostname;
+  const currentProtocol = window.location.protocol;
   // ✅ DEVELOPMENT: Selalu gunakan localhost:3770
   const developmentUrls = {
-    apiUrl: `https://localhost:${backendPort}`,
-    websocketUrl: `https://localhost:${backendPort}`
+    apiUrl: `${currentProtocol}//${currentHostname}:${backendPort}`,
+    websocketUrl: `${currentProtocol}//${currentHostname}:${backendPort}`
   };
-  
+
+
+
   console.log('🛠️ Development URLs created:', developmentUrls);
   return developmentUrls;
 }
@@ -18,16 +22,16 @@ const urls = createDevelopmentUrls();
 
 export const environment = {
   production: false,
-  
+
   // ✅ API CONFIGURATION - Development always uses localhost:3770
   apiUrl: urls.apiUrl,
   websocketUrl: urls.websocketUrl,
-  
+
   // ✅ APPLICATION INFO
   appName: 'AIS Vessel Tracker (Dev)',
   version: '2.0.0-dev',
   buildMode: 'development',
-  
+
   // ✅ FEATURE FLAGS - More permissive in development
   features: {
     realTimeVessels: true,
@@ -129,7 +133,7 @@ export const developmentUtils = {
   getApiEndpoints: () => {
     return {
       vessels: `${environment.apiUrl}/api/vessels`,
-      vts: `${environment.apiUrl}/api/vts`, 
+      vts: `${environment.apiUrl}/api/vts`,
       aton: `${environment.apiUrl}/api/aton`,
       websocket: `${environment.websocketUrl}/socket.io/`,
       health: `${environment.apiUrl}/health`
