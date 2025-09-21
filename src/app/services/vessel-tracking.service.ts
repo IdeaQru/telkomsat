@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Vessel } from './telkomsat-api-service';
+import { Vessel } from './vessel-websocket.service';
 
 export interface VesselPosition {
   mmsi: number;

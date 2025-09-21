@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Vessel } from './telkomsat-api-service';
+import { Vessel } from './vessel-websocket.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,82 +9,141 @@ export class VesselPopupService {
   constructor() {}
 
   // ✅ GENERATE VESSEL POPUP CONTENT
-  public generateVesselPopupContent(vessel: Vessel): string {
-    const vesselTypeDesc = this.getVesselTypeDescription(vessel.vesselType);
-    const navStatusDesc = this.getNavigationStatusDescription(vessel.navStatus);
-    const timeAgo = this.getTimeAgo(new Date(vessel.timestamp));
-    
-    return `
-      <div class="vessel-popup optimized telkomsat-popup">
-        <div class="popup-header">
-          <strong>${vessel.name || 'Unknown Vessel'}</strong>
-          <small class="vessel-type">(${vesselTypeDesc})</small>
-          <div class="source-badge">🛰️ Telkomsat</div>
+ public generateVesselPopupContent(vessel: Vessel): string {
+  const vesselTypeDesc = this.getVesselTypeDescription(vessel.vesselType);
+  const navStatusDesc = this.getNavigationStatusDescription(vessel.navStatus);
+  const timeAgo = this.getTimeAgo(vessel.timestamp); // ✅ NEW: Enhanced time ago function
+  
+  return `
+    <div class="vessel-popup optimized telkomsat-popup">
+      <div class="popup-header">
+        <strong>${vessel.name || 'Unknown Vessel'}</strong>
+        <small class="vessel-type">(${vesselTypeDesc})</small>
+      </div>
+      <div class="popup-content">
+        <div class="popup-row">
+          <span class="label">MMSI:</span>
+          <span class="value">${vessel.mmsi}</span>
         </div>
-        <div class="popup-content">
-          <div class="popup-row">
-            <span class="label">MMSI:</span>
-            <span class="value">${vessel.mmsi}</span>
-          </div>
-          <div class="popup-row">
-            <span class="label">Call Sign:</span>
-            <span class="value">${vessel.callSign || 'N/A'}</span>
-          </div>
-          <div class="popup-row">
-            <span class="label">Speed:</span>
-            <span class="value">${vessel.speed?.toFixed(1) || '0'} knots</span>
-          </div>
-          <div class="popup-row">
-            <span class="label">Course:</span>
-            <span class="value">${vessel.course?.toFixed(0) || '0'}°</span>
-          </div>
-          ${vessel.heading ? `
-          <div class="popup-row">
-            <span class="label">Heading:</span>
-            <span class="value">${vessel.heading.toFixed(0)}°</span>
-          </div>
-          ` : ''}
-          <div class="popup-row">
-            <span class="label">Status:</span>
-            <span class="value">${navStatusDesc}</span>
-          </div>
-          <div class="popup-row">
-            <span class="label">Destination:</span>
-            <span class="value">${vessel.destination || 'N/A'}</span>
-          </div>
-          <div class="popup-row">
-            <span class="label">eta:</span>
-            <span class="value">${vessel.eta || 'N/A'}</span>
-          </div>
-          <div class="popup-row">
-            <span class="label">Position:</span>
-            <span class="value">${vessel.latitude.toFixed(4)}°, ${vessel.longitude.toFixed(4)}°</span>
-          </div>
-          <div class="popup-row">
-            <span class="label">Last Update:</span>
-            <span class="value">${timeAgo}</span>
-          </div>
-          ${vessel.length && vessel.width ? `
-          <div class="popup-row">
-            <span class="label">Dimensions:</span>
-            <span class="value">${vessel.length}m × ${vessel.width}m</span>
-          </div>
-          ` : ''}
-          <div class="popup-row">
-            <span class="label"> Data Source:</span>
-            // <span
-          </div>
-          
+        <div class="popup-row">
+          <span class="label">Call Sign:</span>
+          <span class="value">${vessel.callSign || 'N/A'}</span>
         </div>
-        <div class="popup-actions">
-        
-          <button class="action-btn" onclick="navigator.clipboard.writeText('${vessel.latitude}, ${vessel.longitude}')">
-            📋 Copy Position
-          </button>
+        <div class="popup-row">
+          <span class="label">Speed:</span>
+          <span class="value">${vessel.speed?.toFixed(1) || '0'} knots</span>
+        </div>
+        <div class="popup-row">
+          <span class="label">Course:</span>
+          <span class="value">${vessel.course?.toFixed(0) || '0'}°</span>
+        </div>
+        ${vessel.heading ? `
+        <div class="popup-row">
+          <span class="label">Heading:</span>
+          <span class="value">${vessel.heading.toFixed(0)}°</span>
+        </div>
+        ` : ''}
+        <div class="popup-row">
+          <span class="label">Status:</span>
+          <span class="value">${navStatusDesc}</span>
+        </div>
+        <div class="popup-row">
+          <span class="label">Destination:</span>
+          <span class="value">${vessel.destination || 'N/A'}</span>
+        </div>
+        <div class="popup-row">
+          <span class="label">ETA:</span>
+          <span class="value">${vessel.eta || 'N/A'}</span>
+        </div>
+        <div class="popup-row">
+          <span class="label">Position:</span>
+          <span class="value">${vessel.latitude.toFixed(4)}°, ${vessel.longitude.toFixed(4)}°</span>
+        </div>
+        <div class="popup-row">
+          <span class="label">Last Update:</span>
+          <span class="value ${this.getTimeAgoClass(vessel.timestamp)}">${timeAgo}</span>
+        </div>
+        ${vessel.length && vessel.width ? `
+        <div class="popup-row">
+          <span class="label">Dimensions:</span>
+          <span class="value">${vessel.length}m × ${vessel.width}m</span>
+        </div>
+        ` : ''}
+        <div class="popup-row">
+          <span class="label">Data Source:</span>
+          <span class="value">${vessel.source || 'N/A'}</span>
         </div>
       </div>
-    `;
+      <div class="popup-actions">
+        <button class="action-btn" onclick="navigator.clipboard.writeText('${vessel.latitude}, ${vessel.longitude}')">
+          📋 Copy Position
+        </button>
+        <button class="action-btn" onclick="console.log('Track vessel ${vessel.mmsi}')">
+          🎯 Track Vessel
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ✅ NEW: Enhanced getTimeAgo function dengan WIB timezone
+private getTimeAgo(timestamp: Date): string {
+  const now = new Date();
+  const timeDifference = now.getTime() - timestamp.getTime();
+  
+  // Convert to positive value (in case of future timestamps)
+  const diffMs = Math.abs(timeDifference);
+  
+  // Calculate time units
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  // ✅ Real-time indicators
+  if (seconds < 10) {
+    return `🔴 Just now 📅 ${this.formatDateWIB(timestamp)}`;
+  } else if (seconds < 60) {
+    return `🔴 ${seconds} 📅 ${this.formatDateWIB(timestamp)}`;
+  } else if (minutes < 60) {
+    return `🟡 ${minutes} minute${minutes === 1 ? '' : 's'} 📅 ${this.formatDateWIB(timestamp)}`;
+  } else if (hours < 24) {
+    return `🟠 ${hours} hour${hours === 1 ? '' : 's'} ago ,📅 ${this.formatDateWIB(timestamp)}`;
+  } else if (days < 7) {
+    return `⚫ ${days} day${days === 1 ? '' : 's'} ago , 📅 ${this.formatDateWIB(timestamp)}`;
+  } else {
+    // ✅ For very old data, show WIB formatted date
+    return `📅 ${this.formatDateWIB(timestamp)}`;
   }
+}
+
+// ✅ NEW: Format date in WIB timezone
+private formatDateWIB(date: Date): string {
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  };
+  
+  return new Intl.DateTimeFormat('en-US', options).format(date) + ' WIB';
+}
+
+// ✅ NEW: Get CSS class based on data freshness
+private getTimeAgoClass(timestamp: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - timestamp.getTime();
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  
+  if (minutes < 1) return 'time-live';        // Red for live data
+  if (minutes < 10) return 'time-recent';     // Yellow for recent
+  if (minutes < 60) return 'time-moderate';   // Orange for moderate
+  return 'time-old';                          // Gray for old
+}
+
 
   // ✅ GENERATE CLUSTER POPUP CONTENT
   public generateClusterPopupContent(vesselCount: number, center: { lat: number; lng: number }, currentZoom: number): string {
@@ -194,10 +253,7 @@ export class VesselPopupService {
     return navStatuses[navStatus || 15] || 'Not defined';
   }
 
-  private getTimeAgo(date: Date): string {
-    const now = new Date().toLocaleString('id-ID');
-    return now;
-  }
+
 
   private formatCount(count: number): string {
     if (count >= 1000000) return `${(count/1000000).toFixed(1)}M`;

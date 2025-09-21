@@ -1,6 +1,7 @@
-// map.service.ts - PUSAT KONTROL (VERSI LENGKAP DAN BENAR)
+// map.service.ts - SIMPLE ZOOM CONTROL DENGAN DISTANCE VIEW
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { BehaviorSubject } from 'rxjs';
 
 // Impor semua layanan yang dibutuhkan
 import { MapLayerService, MapLayer } from './map-layer.service';
@@ -10,10 +11,9 @@ import { MapDrawingService } from './map-drawing.service';
 import { MapMarkerService } from './map-marker.service';
 import { MapCoordinateService } from './map-coordinate.service';
 import { VesselService } from './vessel-service'; // Pastikan path ini benar
-import { VtsService } from './vts.service'; // ✅ TAMBAHKAN IMPORT VTS
+import { VtsService } from './vts.service';
 import { AtonService } from './aton.service';
 import { MapLegendService } from './map-legend.service';
-// import L from 'leaflet';
 
 @Injectable({
   providedIn: 'root'
@@ -23,12 +23,17 @@ export class MapService {
   private currentLayer: any;
   private L: any;
   
+  // ✅ Simple zoom level control properties
+  private zoomLevelSubject = new BehaviorSubject<number>(6);
+  public zoomLevel$ = this.zoomLevelSubject.asObservable();
+  private customZoomControl: any = null;
+  
   // Properti publik untuk state peta
   public layers: MapLayer[] = [];
   public controls: any[] = [];
   public activeLayer: string = '';
   public coords: string = '-6.2088, 106.8456';
-  public zoomLevel: number = 10;
+  public zoomLevel: number = 6;
   public cursorCoords: string = '-6.2088, 106.8456';
   leaflet: any;
 
@@ -41,28 +46,36 @@ export class MapService {
     private drawingService: MapDrawingService,
     private markerService: MapMarkerService,
     private coordinateService: MapCoordinateService,
-    private vesselService: VesselService, // <-- Injeksi VesselService
-     private vtsService: VtsService, // ✅ INJEKSI VTS SERVICE
-     private atonService: AtonService, // ✅ INJEKSI VTS SERVICE
-     private mapLegendService: MapLegendService
+    private vesselService: VesselService,
+    private vtsService: VtsService,
+    private atonService: AtonService,
+    private mapLegendService: MapLegendService
   ) {
     this.initializeData();
   }
+
   public getLeaflet(): any | undefined {
     return this.leaflet;
   }
+
   private initializeData(): void {
     try {
       this.layers = this.mapLayerService.getLayers();
       this.controls = this.mapControlsService.getControls();
-        // ✅ TAMBAHKAN VTS CONTROL ke controls array
-    
       
-  
+      // ✅ ADD simple zoom level control to controls array
+      this.controls.push({
+        id: 'zoomlevel',
+        name: 'Zoom Level',
+        icon: 'zoom_in',
+        enabled: false,
+        description: 'Simple zoom control with distance view'
+      });
+
       if (this.layers.length > 0) {
         this.activeLayer = this.layers[0].name;
       }
-      console.log('✅ MapService data initialized');
+      console.log('✅ MapService data initialized with simple zoom control');
     } catch (error) {
       console.error('❌ Error initializing MapService:', error);
       this.setFallbackData();
@@ -70,7 +83,6 @@ export class MapService {
   }
 
   private setFallbackData(): void {
-    // Fungsi ini menyediakan data cadangan jika inisialisasi gagal
     this.layers = [
         { name: 'OpenStreetMap', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '© OpenStreetMap' },
         { name: 'Satellite', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: '© Esri' },
@@ -82,12 +94,16 @@ export class MapService {
         { id: 'marker', name: 'Marker', icon: 'fas fa-map-pin', enabled: false, description: 'Tambah penanda' },
         { id: 'fullscreen', name: 'Fullscreen', icon: 'fas fa-expand', enabled: false, description: 'Layar penuh' },
         { id: 'geolocation', name: 'Lokasi Saya', icon: 'fas fa-location-arrow', enabled: false, description: 'Temukan lokasi saya' },
-        { id: 'draw', name: 'Gambar', icon: 'fas fa-pen', enabled: false, description: 'Gambar di peta' }
+        { id: 'draw', name: 'Gambar', icon: 'fas fa-pen', enabled: false, description: 'Gambar di peta' },
+        { id: 'zoomlevel', name: 'Zoom Level', icon: 'zoom_in', enabled: false, description: 'Simple zoom control' },
+        { id: 'vts', name: 'VTS', icon: 'cell_tower', enabled: false, description: 'Vessel Traffic Service' },
+        { id: 'aton', name: 'AtoN', icon: 'navigation', enabled: false, description: 'Aid to Navigation' }
     ];
     this.activeLayer = this.layers[0].name;
-    console.log('✅ Fallback data set');
+    console.log('✅ Fallback data set with simple zoom control');
   }
-public getLayerIcon(name: string): string {
+
+  public getLayerIcon(name: string): string {
     const icons: { [key: string]: string } = {
       'OpenStreetMap': 'map',
       'Satellite': 'satellite_alt',
@@ -97,11 +113,6 @@ public getLayerIcon(name: string): string {
     return icons[name] || 'layers';
   }
 
-  /**
-   * Mengembalikan nama ikon Material Design berdasarkan ID kontrol.
-   * @param id ID kontrol
-   * @returns Nama ikon
-   */
   public getControlIcon(id: string): string {
     const icons: { [key: string]: string } = {
       'ruler': 'straighten',
@@ -109,70 +120,165 @@ public getLayerIcon(name: string): string {
       'fullscreen': 'fullscreen',
       'geolocation': 'my_location',
       'draw': 'edit',
+      'zoomlevel': 'zoom_in',
       'vts': 'cell_tower',
-      'aton': 'navigation' //buoy
-
+      'aton': 'navigation'
     };
     return icons[id] || 'settings';
   }
+
   // Metode inisialisasi utama peta
   async initializeMap(containerId: string): Promise<any> {
     if (!isPlatformBrowser(this.platformId)) return null;
 
     try {
-      console.log('🗺️ Initializing map...');
+      console.log('🗺️ Initializing map with simple zoom control...');
       
       this.L = await import('leaflet');
 
-      this.setupLeafletIcons(); // Atasi masalah ikon default Leaflet
+      this.setupLeafletIcons();
       
       const defaultLayer = this.layers[0];
       this.activeLayer = defaultLayer.name;
       this.currentLayer = this.mapLayerService.createLeafletLayer(defaultLayer, this.L);
 
-      // 1. Buat objek peta terlebih dahulu
+      // 1. Buat objek peta dengan zoom control disabled
       this.map = this.L.map(containerId, {
         center: [-7.2088, 110.8456],
         zoom: 6,
         layers: [this.currentLayer],
-        zoomControl: false
+        zoomControl: false,
+        minZoom: 1,
+        maxZoom: 19
       });
 
-      // 2. Setelah peta dibuat, inisialisasi semua layanan
+      // 2. ✅ Setup simple custom zoom control
+      this.setupSimpleZoomControl();
+
+      // 3. Initialize services
       await this.initializeServices();
       
       this.setupMapEvents();
       this.updateInfo();
 
-      console.log('✅ Map initialized successfully');
+      console.log('✅ Map initialized successfully with simple zoom control');
       return this.map;
     } catch (error) {
       console.error('❌ Map initialization error:', error);
-      throw error; // Lempar error agar bisa ditangani di komponen
+      throw error;
     }
   }
 
-  // Inisialisasi semua layanan yang bergantung pada peta
+  // ✅ NEW: Setup simple zoom control dengan distance view
+  private setupSimpleZoomControl(): void {
+    const ZoomLevelControl = this.L.Control.extend({
+      onAdd: (map: any) => {
+        const container = this.L.DomUtil.create('div', 'simple-zoom-control');
+        container.innerHTML = `
+          <div class="zoom-control-wrapper">
+            <button class="zoom-btn zoom-in" title="Zoom In">
+              <i class="material-icons">add</i>
+            </button>
+            <div class="zoom-info">
+              <div class="zoom-level">${this.zoomLevel}</div>
+              <div class="view-distance">${this.getViewDistance()}</div>
+            </div>
+            <button class="zoom-btn zoom-out" title="Zoom Out">
+              <i class="material-icons">remove</i>
+            </button>
+          </div>
+        `;
+
+        // ✅ Event handlers
+        this.L.DomEvent.disableClickPropagation(container);
+        
+        // Zoom in button
+        const zoomInBtn = container.querySelector('.zoom-in');
+        this.L.DomEvent.on(zoomInBtn, 'click', () => {
+          this.zoomIn();
+        });
+
+        // Zoom out button
+        const zoomOutBtn = container.querySelector('.zoom-out');
+        this.L.DomEvent.on(zoomOutBtn, 'click', () => {
+          this.zoomOut();
+        });
+
+        return container;
+      },
+
+      onRemove: (map: any) => {
+        // Cleanup if needed
+      }
+    });
+
+    // Add control to map
+    this.customZoomControl = new ZoomLevelControl({ position: 'topright' });
+    this.customZoomControl.addTo(this.map);
+  }
+
+  // ✅ NEW: Calculate view distance berdasarkan zoom level
+  private getViewDistance(): string {
+    // Approximate distances for different zoom levels
+    const distanceMap: { [key: number]: string } = {
+      1: '20,000 km',
+      2: '10,000 km', 
+      3: '5,000 km',
+      4: '2,500 km',
+      5: '1,250 km',
+      6: '625 km',
+      7: '312 km',
+      8: '156 km',
+      9: '78 km',
+      10: '39 km',
+      11: '20 km',
+      12: '10 km',
+      13: '5 km',
+      14: '2.5 km',
+      15: '1.25 km',
+      16: '625 m',
+      17: '312 m',
+      18: '156 m',
+      19: '78 m'
+    };
+
+    return distanceMap[this.zoomLevel] || `${Math.round(20000 / Math.pow(2, this.zoomLevel - 1))} km`;
+  }
+
+  // ✅ NEW: Update zoom info display
+  private updateZoomDisplay(): void {
+    if (this.customZoomControl) {
+      const container = this.customZoomControl.getContainer();
+      const zoomLevelEl = container.querySelector('.zoom-level');
+      const viewDistanceEl = container.querySelector('.view-distance');
+      
+      if (zoomLevelEl) zoomLevelEl.textContent = this.zoomLevel.toString();
+      if (viewDistanceEl) viewDistanceEl.textContent = this.getViewDistance();
+    }
+  }
+
+  // Initialize services
   private async initializeServices(): Promise<void> {
-    // Pastikan this.map sudah ada sebelum memanggil ini
     if (!this.map) return;
 
     this.coordinateService.initialize(this.map, this.L);
     this.measurementService.initialize(this.map, this.L);
     this.drawingService.initialize(this.map, this.L);
     this.markerService.initialize(this.map, this.L);
-    this.vesselService.initialize(this.map, this.L); // <-- Inisialisasi VesselService
-     this.vtsService.initialize(this.map, this.L); // ✅ INISIALISASI VTS SERVICE
-     this.atonService.initialize(this.map, this.L); // ✅ INISIALISASI VTS SERVICE
+    this.vesselService.initialize(this.map, this.L);
+    this.vtsService.initialize(this.map, this.L);
+    this.atonService.initialize(this.map, this.L);
     this.mapLegendService.initialize(this.map, this.L);
+    
     const legend = this.mapLegendService.createLegend();
     legend.addTo(this.map);
     this.setupClickHandler();
   }
- public updateLegendCounts(vesselCount: number, vtsCount: number, atonCount: number): void {
+
+  public updateLegendCounts(vesselCount: number, vtsCount: number, atonCount: number): void {
     this.mapLegendService.updateCounts(vesselCount, vtsCount, atonCount);
   }
-  // Delegasi event klik ke layanan yang aktif
+
   private setupClickHandler(): void {
     this.map.on('click', (e: any) => {
       if (this.measurementService.isActive()) return this.measurementService.handleClick(e);
@@ -181,7 +287,7 @@ public getLayerIcon(name: string): string {
     });
   }
 
-  // Atur event-event peta
+  // ✅ ENHANCED: Setup map events dengan zoom tracking
   private setupMapEvents(): void {
     this.map.on('mousemove', (e: any) => {
       const { lat, lng } = e.latlng;
@@ -189,7 +295,11 @@ public getLayerIcon(name: string): string {
       this.coordinateService.updateCursorCoords(this.cursorCoords);
     });
 
-    this.map.on('zoomend moveend', () => this.updateInfo());
+    this.map.on('zoomend moveend', () => {
+      this.updateInfo();
+      this.updateZoomDisplay(); // ✅ Update zoom display
+      this.zoomLevelSubject.next(this.zoomLevel); // ✅ Emit zoom change
+    });
 
     this.map.on('dblclick', (e: any) => {
       if (this.drawingService.isActive()) this.drawingService.handleDoubleClick(e);
@@ -202,12 +312,11 @@ public getLayerIcon(name: string): string {
     this.coords = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
   }
 
-  // Menangani toggle kontrol dari UI
+  // Control toggle handler
   public handleControlToggle(controlId: string, isEnabled: boolean): void {
     const control = this.controls.find(c => c.id === controlId);
     if (control) control.enabled = isEnabled;
     
-    // Matikan semua service interaktif lain untuk menghindari konflik
     this.disableAllInteractiveServices();
     
     switch (controlId) {
@@ -216,6 +325,12 @@ public getLayerIcon(name: string): string {
       case 'marker': this.markerService.toggle(isEnabled); break;
       case 'fullscreen': if (isEnabled) this.toggleFullscreen(); break;
       case 'geolocation': if (isEnabled) this.getCurrentLocation(); break;
+      case 'zoomlevel': 
+        // Simple zoom control doesn't need special toggle
+        console.log('🔍 Simple zoom control always active');
+        break;
+      case 'vts': this.vtsService.toggleVtsVisibility(isEnabled); break;
+      case 'aton': this.atonService.toggleAtonVisibility(isEnabled); break;
     }
   }
 
@@ -225,7 +340,34 @@ public getLayerIcon(name: string): string {
     this.markerService.disable();
   }
 
-  // Mengganti layer peta
+  // ✅ Simple zoom methods
+  public zoomIn(): void {
+    if (this.map && this.zoomLevel < 19) {
+      this.map.zoomIn();
+    }
+  }
+
+  public zoomOut(): void {
+    if (this.map && this.zoomLevel > 1) {
+      this.map.zoomOut();
+    }
+  }
+
+  public setZoomLevel(level: number): void {
+    if (this.map && level >= 1 && level <= 19) {
+      this.map.setZoom(level);
+    }
+  }
+
+  public getCurrentZoomLevel(): number {
+    return this.zoomLevel;
+  }
+
+  public getCurrentViewDistance(): string {
+    return this.getViewDistance();
+  }
+
+  // Layer switching
   public switchLayer(layerName: string): void {
     const layerConfig = this.layers.find(l => l.name === layerName);
     if (layerConfig && this.map) {
@@ -237,9 +379,8 @@ public getLayerIcon(name: string): string {
     }
   }
 
-  // Fungsi utilitas untuk ikon
+  // Utility functions
   private setupLeafletIcons(): void {
-    // Perbaikan untuk masalah ikon default Leaflet dengan Webpack
     delete (this.L.Icon.Default.prototype as any)._getIconUrl;
     this.L.Icon.Default.mergeOptions({
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -283,7 +424,7 @@ public getLayerIcon(name: string): string {
     );
   }
 
-  // GETTERS
+  // Getters
   public getMap(): any {
     return this.map;
   }
@@ -292,7 +433,7 @@ public getLayerIcon(name: string): string {
     return this.markerService.getMarkersCount();
   }
 
-  // CLEANUP
+  // Cleanup
   public resizeMap(): void {
     if (this.map) {
       setTimeout(() => this.map.invalidateSize(), 100);
@@ -301,17 +442,23 @@ public getLayerIcon(name: string): string {
 
   public destroyMap(): void {
     if (this.map) {
-      // Cleanup semua layanan
       this.measurementService.cleanup();
       this.drawingService.cleanup();
       this.markerService.cleanup();
       this.coordinateService.cleanup();
-      this.vesselService.cleanup(); // <-- Cleanup VesselService
-         this.vtsService.cleanup(); // ✅ CLEANUP VTS SERVICE
-        this.atonService.initialize(this.map, this.L); // ✅ INISIALISASI ATON
-this.mapLegendService.cleanup();
-      this.map.off(); // Hapus semua listener dari objek peta
-      this.map.remove(); // Hapus peta dari DOM
+      this.vesselService.cleanup();
+      this.vtsService.cleanup();
+      this.atonService.cleanup();
+      this.mapLegendService.cleanup();
+      
+      // ✅ Cleanup simple zoom control
+      if (this.customZoomControl) {
+        this.map.removeControl(this.customZoomControl);
+        this.customZoomControl = null;
+      }
+      
+      this.map.off();
+      this.map.remove();
       this.map = null;
       this.currentLayer = null;
     }

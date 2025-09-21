@@ -1,0 +1,388 @@
+<!-- poi-area.component.html - UPDATED VERSION -->
+<div class="poi-page-container">
+  <!-- Header -->
+  <mat-toolbar color="primary">
+    <button mat-icon-button (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="page-title">Download Vessel Data by Area</span>
+    <span class="spacer"></span>
+    <mat-icon>download</mat-icon>
+  </mat-toolbar>
+
+  <!-- Main Content -->
+  <div class="content-wrapper">
+    
+    <!-- Coordinate Input Card -->
+    <mat-card class="coordinate-input-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="title-icon">place</mat-icon>
+          Geographic Area & Filters
+        </mat-card-title>
+        <mat-card-subtitle>
+          Define coordinates and time range for vessel data export
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="coordinateForm" class="coordinate-form">
+          
+          <!-- Coordinate Inputs -->
+          <div class="coordinates-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Min Longitude</mat-label>
+              <input matInput type="number" formControlName="minLongitude" 
+                     placeholder="-180 to 180" step="0.000001">
+              <mat-error>{{ getErrorMessage('minLongitude') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Max Longitude</mat-label>
+              <input matInput type="number" formControlName="maxLongitude" 
+                     placeholder="-180 to 180" step="0.000001">
+              <mat-error>{{ getErrorMessage('maxLongitude') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Min Latitude</mat-label>
+              <input matInput type="number" formControlName="minLatitude" 
+                     placeholder="-90 to 90" step="0.000001">
+              <mat-error>{{ getErrorMessage('minLatitude') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Max Latitude</mat-label>
+              <input matInput type="number" formControlName="maxLatitude" 
+                     placeholder="-90 to 90" step="0.000001">
+              <mat-error>{{ getErrorMessage('maxLatitude') }}</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Date Range -->
+          <div class="date-range">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+              <mat-error>Start date is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+              <mat-error>End date is required</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Data Type Selection -->
+          <mat-form-field appearance="outline" class="data-type-field">
+            <mat-label>Data Type</mat-label>
+            <mat-select formControlName="dataType">
+              <mat-option *ngFor="let option of dataTypeOptions" [value]="option.value">
+                <mat-icon class="option-icon">{{ option.icon }}</mat-icon>
+                <span class="option-label">{{ option.label }}</span>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- ✅ ENHANCED Action Buttons dengan Visual Indicator -->
+          <div class="action-buttons">
+            <button mat-raised-button 
+                    color="accent"
+                    (click)="quickCount()"
+                    [disabled]="getIsAnalyzeDisabled()"
+                    class="quick-count-btn">
+              <mat-icon>speed</mat-icon>
+              Quick Count
+            </button>
+
+            <button mat-raised-button 
+                    color="primary"
+                    (click)="analyzeArea()"
+                    [disabled]="getIsAnalyzeDisabled()"
+                    class="analyze-btn">
+              <mat-icon>analytics</mat-icon>
+              {{ isAnalyzing ? 'Analyzing...' : 'Analyze Area' }}
+            </button>
+          </div>
+
+          <!-- ✅ NEW: Step Indicator -->
+          <div class="step-indicator">
+            <div class="step" [class.completed]="coordinateForm.valid">
+              <mat-icon>{{coordinateForm.valid ? 'check_circle' : 'radio_button_unchecked'}}</mat-icon>
+              <span>1. Form Complete</span>
+            </div>
+            <div class="step" [class.completed]="areaAnalysis">
+              <mat-icon>{{areaAnalysis ? 'check_circle' : 'radio_button_unchecked'}}</mat-icon>
+              <span>2. Area Analyzed</span>
+            </div>
+            <div class="step" [class.completed]="areaAnalysis" [class.available]="areaAnalysis">
+              <mat-icon>{{areaAnalysis ? 'download' : 'radio_button_unchecked'}}</mat-icon>
+              <span>3. Ready to Download</span>
+            </div>
+          </div>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- ✅ ALWAYS VISIBLE Download Section (with placeholder when not ready) -->
+    <mat-card class="download-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="title-icon">download</mat-icon>
+          Download Options
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ areaAnalysis ? 'Choose your download format' : 'Analyze area first to unlock downloads' }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <!-- ✅ Download buttons - ALWAYS VISIBLE -->
+        <div class="download-buttons">
+          <button mat-raised-button 
+                  color="primary"
+                  (click)="downloadPDF()"
+                  [disabled]="getIsDownloadDisabled()"
+                  class="download-btn pdf-btn">
+            <mat-icon>picture_as_pdf</mat-icon>
+            <span class="btn-text">
+              {{ areaAnalysis ? 'Download PDF' : 'PDF (Analyze First)' }}
+            </span>
+            <span class="size-hint" *ngIf="areaAnalysis && areaAnalysis.totalCount <= 5000">
+              (~{{ estimateFileSize(areaAnalysis.totalCount, 'pdf') }})
+            </span>
+            <span class="size-warning" *ngIf="areaAnalysis && areaAnalysis.totalCount > 5000">
+              (Too large - use CSV)
+            </span>
+          </button>
+
+          <button mat-raised-button 
+                  color="accent"
+                  (click)="downloadCSV()"
+                  [disabled]="getIsDownloadDisabled()"
+                  class="download-btn csv-btn">
+            <mat-icon>table_chart</mat-icon>
+            <span class="btn-text">
+              {{ areaAnalysis ? 'Download CSV' : 'CSV (Analyze First)' }}
+            </span>
+            <span class="size-hint" *ngIf="areaAnalysis">
+              (~{{ estimateFileSize(areaAnalysis.totalCount, 'csv') }})
+            </span>
+          </button>
+        </div>
+
+        <!-- ✅ Download Instructions -->
+        <div class="download-instructions" *ngIf="!areaAnalysis">
+          <mat-icon>info</mat-icon>
+          <p>
+            <strong>To enable downloads:</strong><br>
+            1. Fill in all coordinate and date fields<br>
+            2. Click "Analyze Area" button<br>
+            3. Download buttons will become available
+          </p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Area Analysis Results -->
+    <mat-card class="analysis-results-card" *ngIf="areaAnalysis">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="title-icon">assessment</mat-icon>
+          Area Analysis Results
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="analysis-grid">
+          <div class="analysis-item">
+            <mat-icon class="analysis-icon">directions_boat</mat-icon>
+            <div class="analysis-content">
+              <h3>{{ areaAnalysis.totalCount.toLocaleString() }}</h3>
+              <p>Total Vessels</p>
+            </div>
+          </div>
+
+          <div class="analysis-item">
+            <mat-icon class="analysis-icon">view_list</mat-icon>
+            <div class="analysis-content">
+              <h3>{{ areaAnalysis.totalPages }}</h3>
+              <p>Pages (100/page)</p>
+            </div>
+          </div>
+
+          <div class="analysis-item">
+            <mat-icon class="analysis-icon">schedule</mat-icon>
+            <div class="analysis-content">
+              <h3>{{ areaAnalysis.recommendations.estimatedDownloadTime }}</h3>
+              <p>Est. Download Time</p>
+            </div>
+          </div>
+
+          <div class="analysis-item">
+            <mat-icon class="analysis-icon">map</mat-icon>
+            <div class="analysis-content">
+              <h3>{{ areaAnalysis.areaAnalysis.boundingBoxSize.toFixed(0) }} km²</h3>
+              <p>Coverage Area</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations" *ngIf="areaAnalysis.recommendations">
+          <h4>📋 Recommendations</h4>
+          <mat-chip-listbox class="recommendation-chips">
+            <mat-chip-option selected>
+              <mat-icon matChipAvatar>{{ getRecommendationIcon(areaAnalysis.recommendations.approach) }}</mat-icon>
+              {{ areaAnalysis.recommendations.approach | titlecase }}
+            </mat-chip-option>
+            <mat-chip-option>
+              <mat-icon matChipAvatar>memory</mat-icon>
+              {{ areaAnalysis.recommendations.memoryUsage }}
+            </mat-chip-option>
+          </mat-chip-listbox>
+          <p class="suggestion">{{ areaAnalysis.recommendations.suggestion }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Progress Section -->
+    <mat-card class="progress-section" *ngIf="isDownloading || getProgressValue() > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="title-icon">download</mat-icon>
+          Download Progress
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <mat-progress-bar 
+          mode="determinate" 
+          [value]="getProgressValue()"
+          [color]="progressInfo.stage === 'error' ? 'warn' : 'primary'">
+        </mat-progress-bar>
+        
+        <div class="progress-details">
+          <p class="progress-message">
+            <mat-icon class="stage-icon">{{ getStageIcon(progressInfo.stage) }}</mat-icon>
+            {{ getProgressMessage() }}
+          </p>
+          
+          <div class="progress-stats" *ngIf="progressInfo.totalPages > 0">
+            <div class="stat">
+              <span class="label">Progress:</span>
+              <span class="value">{{ getProgressValue() }}%</span>
+            </div>
+            <div class="stat" *ngIf="progressInfo.currentPage > 0">
+              <span class="label">Page:</span>
+              <span class="value">{{ progressInfo.currentPage }} / {{ progressInfo.totalPages }}</span>
+            </div>
+            <div class="stat" *ngIf="progressInfo.fetchedVessels > 0">
+              <span class="label">Vessels:</span>
+              <span class="value">{{ progressInfo.fetchedVessels.toLocaleString() }} / {{ progressInfo.totalVessels.toLocaleString() }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Download Summary -->
+    <mat-card class="download-summary" *ngIf="downloadedData && progressInfo.isComplete">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="title-icon">check_circle</mat-icon>
+          Download Complete
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="summary-stats">
+          <div class="summary-item">
+            <h3>{{ downloadedData.totalFetched?.toLocaleString() || downloadedData.vessels.length.toLocaleString() }}</h3>
+            <p>Vessels Downloaded</p>
+          </div>
+          <div class="summary-item" *ngIf="downloadedData.performance">
+            <h3>{{ (downloadedData.performance.totalTime / 1000).toFixed(1) }}s</h3>
+            <p>Processing Time</p>
+          </div>
+          <div class="summary-item">
+            <h3>{{ downloadedData.mode | titlecase }}</h3>
+            <p>Download Mode</p>
+          </div>
+        </div>
+        
+        <p class="download-info" *ngIf="downloadedData.downloadReady">
+          <mat-icon>info</mat-icon>
+          Files are ready for download. 
+          PDF: {{ downloadedData.downloadReady.pdf.ready ? 'Available' : 'Too large' }}, 
+          CSV: {{ downloadedData.downloadReady.csv.ready ? 'Available' : 'Processing' }}
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Help Card -->
+    <mat-card class="help-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="title-icon">help</mat-icon>
+          How to Use
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="help-steps">
+          <div class="help-step">
+            <mat-icon class="step-icon">looks_one</mat-icon>
+            <p><strong>Set Coordinates:</strong> Enter the geographic bounds for your area of interest</p>
+          </div>
+          <div class="help-step">
+            <mat-icon class="step-icon">looks_two</mat-icon>
+            <p><strong>Choose Time Range:</strong> Select start and end dates for historical data</p>
+          </div>
+          <div class="help-step">
+            <mat-icon class="step-icon">looks_3</mat-icon>
+            <p><strong>Select Data Type:</strong> Choose between current vessels, tracks, or all data</p>
+          </div>
+          <div class="help-step">
+            <mat-icon class="step-icon">looks_4</mat-icon>
+            <p><strong>Analyze Area:</strong> Get vessel count and recommendations before downloading</p>
+          </div>
+          <div class="help-step">
+            <mat-icon class="step-icon">looks_5</mat-icon>
+            <p><strong>Download:</strong> Choose PDF for reports or CSV for data analysis</p>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="help-tips">
+          <h4>💡 Tips</h4>
+          <ul>
+            <li>Use <strong>Quick Count</strong> for fast preview without full analysis</li>
+            <li>Large areas (>10K vessels) will be processed in batches</li>
+            <li>PDF format has 5,000 vessel limit - use CSV for larger datasets</li>
+            <li>Historical track data may take longer to process</li>
+          </ul>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="form-actions">
+          <button mat-stroked-button 
+                  (click)="resetForm()"
+                  [disabled]="isDownloading || isAnalyzing"
+                  class="reset-btn">
+            <mat-icon>refresh</mat-icon>
+            Reset Form
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

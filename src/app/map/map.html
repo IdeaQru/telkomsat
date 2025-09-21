@@ -1,80 +1,156 @@
-<!-- map.html -->
 <div class="app-container">
-  <!-- ✅ DIRECT BINDING to VesselService - NO local state interference -->
-  <app-vessel-loading 
+  <!-- ✅ LOADING OVERLAY - Sebagai overlay terpisah, BUKAN wrapper -->
+  <!-- <app-vessel-loading 
     *ngIf="vesselService.loadingState$ | async as loadingState"
     [loadingState]="loadingState"
     (retry)="onRetryConnection()"
     (refresh)="onRefreshData()">
-  </app-vessel-loading>
-  
+  </app-vessel-loading> -->
 
+  <!-- ✅ SIDENAV CONTAINER - Layout utama, independent dari loading -->
+  <mat-sidenav-container class="map-container" hasBackdrop="false">
 
-  <!-- Sidenav container -->
-  <mat-sidenav-container class="map-container">
-    
-    <!-- Status bar -->
-    <div class="status-bar" *ngIf="vesselCount > 0">
+    <!-- ✅ STATUS BAR - Fixed position dengan kondisi yang diperbaiki -->
+    <div class="status-bar" *ngIf="vesselCount > 0 || vtsCount > 0 || atonCount > 0">
       <div class="status-item">
-        <mat-icon>directions_boat</mat-icon>
-        <span>{{ vesselCount }} Vessels</span>
+        <mat-icon class="status-icon">directions_boat</mat-icon>
+        <span class="count">{{ vesselCount }} Vessels</span>
       </div>
       <div class="status-item">
-        <mat-icon>business</mat-icon>
-        <span>{{ vtsCount }} VTS</span>
+        <mat-icon class="status-icon">business</mat-icon>
+        <span class="count">{{ vtsCount }} VTS</span>
       </div>
       <div class="status-item">
-        <mat-icon>place</mat-icon>
-        <span>{{ atonCount }} AtoN</span>
+        <mat-icon class="status-icon">place</mat-icon>
+        <span class="count">{{ atonCount }} AtoN</span>
+      </div>
+      <div class="status-item" *ngIf="vesselService.loadingState$ | async as loadingState">
+        <mat-icon class="status-icon">schedule</mat-icon>
+        <span class="time">{{ loadingState.lastUpdate | date:'HH:mm:ss' }}</span>
+      </div>
+      <div class="status-item connection" [class.connected]="isConnected">
+        <mat-icon class="status-icon">{{ isConnected ? 'wifi' : 'wifi_off' }}</mat-icon>
+        <span class="label">{{ isConnected ? 'Connected' : 'Disconnected' }}</span>
       </div>
     </div>
 
-    <!-- Sidebar -->
+    <!-- ✅ SIDEBAR - Menggunakan CSS lama dengan struktur yang diperbaiki -->
     <mat-sidenav #sidebar 
                  mode="side" 
                  [opened]="sidebarOpen"
-                 class="map-sidebar">
-      <!-- Your existing sidebar content -->
+                 fixedInViewport="true" 
+                 position="start"
+                 class="map-sidebar batik-theme">
+
+      <!-- Enhanced Header dengan Pattern Batik - CSS LAMA -->
+      <div class="sidebar-header batik-header">
+        <div class="header-content">
+          <div class="header-icon">
+            <mat-icon class="main-icon">map</mat-icon>
+          </div>
+          <div class="header-text">
+            <h2 class="header-title">Konfigurasi Peta</h2>
+            <p class="header-subtitle">Indonesia Heritage Map</p>
+          </div>
+          <button mat-icon-button (click)="toggleSidebar()" class="close-btn">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="batik-pattern"></div>
+      </div>
+
       <div class="sidebar-content">
-        <h3>Map Controls</h3>
-        
-        <!-- Layer selection -->
-        <div class="section">
-          <h4>Map Layers</h4>
-          <div *ngFor="let layer of mapService.layers" class="layer-item">
-            <button (click)="selectLayer(layer.name)" 
-                    [class.active]="layer.name === mapService.activeLayer">
-              {{ layer.name }}
-            </button>
+        <!-- Layer Selection - CSS LAMA -->
+        <div class="section-container">
+          <div class="section-header batik-accent">
+            <mat-icon class="section-icon">layers</mat-icon>
+            <h3 class="section-title">Pilih Layer Peta</h3>
+          </div>
+
+          <div class="layer-grid">
+            <div *ngFor="let layer of mapService.layers" 
+                 class="layer-card batik-card"
+                 [class.active]="layer.name === mapService.activeLayer" 
+                 (click)="selectLayer(layer.name)">
+              <div class="layer-icon-container">
+                <mat-icon class="layer-icon">{{mapService.getLayerIcon(layer.name)}}</mat-icon>
+              </div>
+              <div class="layer-info">
+                <h4 class="layer-name">{{layer.name}}</h4>
+                <p class="layer-description">{{getLayerDescription(layer.name)}}</p>
+              </div>
+              <div class="layer-status" *ngIf="layer.name === mapService.activeLayer">
+                <mat-icon class="check-icon">check_circle</mat-icon>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <!-- Visibility controls -->
-        <div class="section">
-          <h4>Data Visibility</h4>
-          <mat-slide-toggle [(ngModel)]="vtsVisible" 
-                           (change)="toggleVtsVisibility()">
-            VTS Stations ({{ vtsCount }})
-          </mat-slide-toggle>
-          <br>
-          <mat-slide-toggle [(ngModel)]="atonVisible" 
-                           (change)="toggleAtonVisibility()">
-            AtoN Markers ({{ atonCount }})
-          </mat-slide-toggle>
+
+        <!-- Controls Section - CSS LAMA -->
+        <div class="section-container">
+          <div class="section-header batik-accent">
+            <mat-icon class="section-icon">tune</mat-icon>
+            <h3 class="section-title">Kontrol & Fitur</h3>
+          </div>
+
+          <div class="controls-list">
+            <div *ngFor="let control of mapService.controls" class="control-card batik-card">
+              <div class="control-info">
+                <div class="control-icon-container">
+                  <mat-icon class="control-icon">{{mapService.getControlIcon(control.id)}}</mat-icon>
+                </div>
+                <div class="control-details">
+                  <h4 class="control-name">{{control.name}}</h4>
+                  <p class="control-description">{{control.description}}</p>
+                </div>
+              </div>
+              <div class="control-toggle">
+                <mat-slide-toggle 
+                  [checked]="control.enabled"
+                  (change)="onControlToggle(control.id, $event.checked)" 
+                  color="accent">
+                </mat-slide-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+            <!-- Di sidebar, tambahkan navigation buttons -->
+        <div class="section-container">
+          <div class="section-header batik-accent">
+            <mat-icon class="section-icon">more_horiz</mat-icon>
+            <h3 class="section-title">Additional Features</h3>
+          </div>
+
+          <div class="navigation-buttons">
+            <button mat-raised-button color="primary" (click)="navigateToPOIArea()" class="nav-button">
+              <mat-icon>download</mat-icon>
+              Download Data by Area
+            </button>
+
+
+          </div>
+        </div>
+
+        <!-- Footer - CSS LAMA -->
+        <div class="sidebar-footer">
+          <div class="footer-content">
+            <p class="footer-text">🇮🇩 Made with Indonesian Heritage</p>
+          </div>
         </div>
       </div>
     </mat-sidenav>
 
-    <!-- Main content -->
-    <mat-sidenav-content class="map-content">
-      <div id="map" class="map-view"></div>
-      
-      <!-- Toggle button -->
+    <!-- ✅ MAP CONTENT - CSS LAMA -->
+    <mat-sidenav-content class="map-content-wrapper">
+      <div id="map" class="map-content"></div>
+
+      <!-- ✅ TOGGLE BUTTON - CSS LAMA -->
       <button mat-fab 
-              color="primary" 
-              class="sidebar-toggle-btn" 
+              color="accent" 
+              class="sidebar-toggle-btn batik-fab" 
               (click)="toggleSidebar()" 
-              *ngIf="!sidebarOpen">
+              *ngIf="!sidebarOpen"
+              [attr.aria-label]="'Open sidebar'">
         <mat-icon>menu</mat-icon>
       </button>
     </mat-sidenav-content>

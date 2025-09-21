@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EMPTY, Subscription, catchError, filter, interval, startWith, switchMap, Observable } from 'rxjs';
+import { Subject, combineLatest, interval, merge, EMPTY, BehaviorSubject } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, filter, switchMap, tap, catchError, startWith } from 'rxjs/operators';
 
 // Angular Material Imports
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
@@ -11,15 +12,43 @@ import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 // Services
 import { MapService } from '../services/map-service';
-import { VesselService } from '../services/vessel-service';
+import { VesselService, VesselServiceStats } from '../services/vessel-service';
 import { LoadingState } from '../services/optimized-marker-manager';
 import { VtsService, VTS } from '../services/vts.service';
 import { AtonService, AtoN } from '../services/aton.service';
+import { VesselWebSocketService, ConnectionStats, Vessel } from '../services/vessel-websocket.service';
+
+// Components
 import { VesselLoadingComponent } from '../vessel-loading/vessel-loading';
-import { TelkomsatApiService } from '../services/telkomsat-api-service';
+
+// Interfaces
+export interface MapComponentState {
+  isInitialized: boolean;
+  hasError: boolean;
+  errorMessage?: string;
+  dataLastUpdated: Date | null;
+  performanceStats: {
+    totalVessels: number;
+    realTimeUpdates: number;
+    connectionStatus: string;
+    renderingTime: number;
+  };
+}
+
+export interface UIState {
+  loadingState: LoadingState;
+  isConnected: boolean;
+  connectionStats: ConnectionStats;
+  vesselCount: number;
+  vtsCount: number;
+  atonCount: number;
+}
 
 @Component({
   selector: 'app-map',
@@ -34,93 +63,144 @@ import { TelkomsatApiService } from '../services/telkomsat-api-service';
     MatButtonModule,
     MatSlideToggleModule,
     MatExpansionModule,
+    MatBadgeModule,
+    MatTooltipModule,
+    MatSnackBarModule,
     VesselLoadingComponent,
   ],
   templateUrl: './map.html',
-  styleUrls: ['./map.scss']
+  styleUrls: ['./map.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MapComponent implements OnInit, OnDestroy {
   @ViewChild('sidebar') sidebar!: MatSidenav;
   
-  // ✅ STATE MANAGEMENT
-  loadingState: LoadingState = {
-    isLoading: true,
-    message: 'Initializing...',
-    progress: 0,
-    hasData: false,
-    lastUpdate: null,
-    error: null
+  // ✅ SINGLE DESTROY SUBJECT for all subscriptions
+  private readonly destroy$ = new Subject<void>();
+  private readonly timeoutIds = new Set<number>();
+  private readonly intervalIds = new Set<number>();
+  
+  // ✅ OPTIMIZED: Combined UI State Observable
+  public readonly uiState$ = new BehaviorSubject<UIState>({
+    loadingState: {
+      isLoading: true,
+      message: 'Initializing real-time vessel tracking...',
+      progress: 0,
+      hasData: false,
+      lastUpdate: null,
+      error: null
+    },
+    isConnected: false,
+    connectionStats: {
+      connected: false,
+      reconnectAttempts: 0,
+      vesselCount: 0,
+      realTimeUpdates: 0
+    },
+    vesselCount: 0,
+    vtsCount: 0,
+    atonCount: 0
+  });
+
+  // ✅ COMPONENT STATE
+  componentState: MapComponentState = {
+    isInitialized: false,
+    hasError: false,
+    dataLastUpdated: null,
+    performanceStats: {
+      totalVessels: 0,
+      realTimeUpdates: 0,
+      connectionStatus: 'disconnected',
+      renderingTime: 0
+    }
   };
 
-  vesselCount = 0;
-  vtsCount = 0;
-  atonCount = 0;
-  isConnected = false;
+  // ✅ UI STATE (readonly getters from BehaviorSubject)
+  get vesselCount(): number { return this.uiState$.value.vesselCount; }
+  get vtsCount(): number { return this.uiState$.value.vtsCount; }
+  get atonCount(): number { return this.uiState$.value.atonCount; }
+  get isConnected(): boolean { return this.uiState$.value.isConnected; }
+  get loadingState(): LoadingState { return this.uiState$.value.loadingState; }
+
+  // ✅ UI CONTROLS
   sidebarOpen = false;
   statsMinimized = false;
-
+  
   // ✅ VTS STATE
   vtsData: VTS[] = [];
   vtsLoading = false;
   vtsVisible = true;
   lastVtsUpdate: Date | null = null;
+  vtsPollingEnabled = true;
 
-  // ✅ ATON STATE
+  // ✅ ATON STATE  
   atonData: AtoN[] = [];
   atonLoading = false;
   atonVisible = true;
   lastAtonUpdate: Date | null = null;
-
-  // ✅ SUBSCRIPTIONS & TIMERS
-  private connectionSubscription?: Subscription;
-  private vtsSubscription?: Subscription;
-  private atonSubscription?: Subscription;
-  private syncTimer?: Subscription;
-  private vtsPollingTimer?: Subscription;
-  private atonPollingTimer?: Subscription;
-  
-  // ✅ POLLING INTERVALS (changeable)
-  private vtsPollingInterval = 30000; // 30 detik
-  private atonPollingInterval = 30000; // 30 detik
-  
-  // ✅ POLLING CONTROLS
-  vtsPollingEnabled = true;
   atonPollingEnabled = true;
+
+  // ✅ PERFORMANCE STATS
+  vesselServiceStats: VesselServiceStats = {
+    totalVessels: 0,
+    visibleMarkers: 0,
+    clusteredMarkers: 0,
+    realTimeUpdates: 0,
+    connectionStatus: 'disconnected',
+    lastUpdate: null,
+    performance: {
+      updateThrottle: 50,
+      renderingTime: 0,
+      memoryUsage: 'N/A'
+    }
+  };
 
   constructor(
     public mapService: MapService,
-    public vesselService: VesselService, // ✅ PUBLIC for template access
-
+    public vesselService: VesselService,
+    private webSocketService: VesselWebSocketService,
     private vtsService: VtsService,
     private atonService: AtonService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
-    private telkomsatApi: TelkomsatApiService
-  ) {}
+    private snackBar: MatSnackBar
+  ) {
+    console.log('🚀 MapComponent constructor started with optimized architecture');
+  }
 
-  // Modifikasi ngOnInit untuk include polling setup
+  // ✅ OPTIMIZED: Safe setTimeout with cleanup tracking
+  private safeSetTimeout(callback: () => void, delay: number): void {
+    const timeoutId = window.setTimeout(() => {
+      callback();
+      this.timeoutIds.delete(timeoutId);
+    }, delay);
+    this.timeoutIds.add(timeoutId);
+  }
+
+  // ✅ OPTIMIZED: Safe setInterval with cleanup tracking
+  private safeSetInterval(callback: () => void, delay: number): void {
+    const intervalId = window.setInterval(callback, delay);
+    this.intervalIds.add(intervalId);
+  }
+
+  // ✅ OPTIMIZED ngOnInit with single subscription pattern
   async ngOnInit() {
-    console.log('🚀 MapComponent ngOnInit started');
+    console.log('🚀 MapComponent ngOnInit started with memory optimization');
     
     try {
       // ✅ 1. Initialize map first
       await this.mapService.initializeMap('map');
       console.log('🗺️ Map initialized successfully');
 
-      // ✅ 2. Setup all subscriptions
-      this.setupConnectionMonitoring();
-      this.setupVtsSubscription();
-      this.setupAtonSubscription();
-      this.setupSyncTimer();
+      // ✅ 2. Setup optimized subscriptions with single destroy subject
+      this.setupOptimizedSubscriptions();
       
-      // ✅ 3. Setup polling for VTS and AtoN
-      this.setupVtsPolling();
-      this.setupAtonPolling();
-
-      // ✅ 4. Initialize data dengan sequential loading
+      // ✅ 3. Initialize data
       this.initializeMapData();
 
-      console.log('✅ MapComponent initialization complete');
+      // ✅ 4. Mark as initialized
+      this.componentState.isInitialized = true;
+      console.log('✅ MapComponent initialization complete with optimizations');
       
     } catch (error) {
       console.error('❌ Error in ngOnInit:', error);
@@ -128,353 +208,407 @@ export class MapComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ SETUP VTS POLLING dengan auto-refresh
-  private setupVtsPolling(): void {
-    this.vtsPollingTimer = interval(this.vtsPollingInterval)
-      .pipe(
-        startWith(0), // Immediate first call
-        filter(() => this.vtsPollingEnabled), // Only poll when enabled
-       
-        catchError(error => {
-          console.error('❌ VTS polling error:', error);
-          // Return empty observable to continue polling
-          return EMPTY;
-        })
-      )
-      .subscribe({
-        next: () => {
-          console.log('✅ VTS polling completed successfully');
-        },
-        error: (error) => {
-          console.error('❌ VTS polling subscription error:', error);
-        }
+  // ✅ OPTIMIZED: Single method for all subscriptions
+  private setupOptimizedSubscriptions(): void {
+    console.log('📡 Setting up optimized subscriptions with single destroy subject');
+
+    // ✅ COMBINED: Loading state + Connection + Vessel updates
+    const mainDataStream$ = combineLatest([
+      this.vesselService.loadingState$,
+      this.webSocketService.connectionStats$,
+      this.webSocketService.connectionStatus$,
+      this.webSocketService.vesselUpdates$.pipe(startWith([]))
+    ]).pipe(
+      debounceTime(100), // ✅ Prevent rapid fire updates
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    );
+
+    mainDataStream$.subscribe(([loadingState, connectionStats, connectionStatus, vessels]) => {
+      this.zone.run(() => {
+        // ✅ Update UI state in single operation
+        const currentState = this.uiState$.value;
+        this.uiState$.next({
+          ...currentState,
+          loadingState: { ...loadingState },
+          connectionStats: { ...connectionStats },
+          isConnected: connectionStatus === 'connected',
+          vesselCount: vessels.length
+        });
+
+        // ✅ Update component state
+        this.componentState.dataLastUpdated = new Date();
+        this.componentState.performanceStats.connectionStatus = connectionStatus;
+        this.componentState.performanceStats.realTimeUpdates = connectionStats.realTimeUpdates;
+
+        // ✅ Show connection notifications
+        this.handleConnectionStatusChange(connectionStatus, currentState.isConnected);
+        
+        this.cdr.markForCheck();
       });
-  }
-  private updateCounts(): void {
-    this.vesselCount = this.vesselService.getVesselCount();
-    this.vtsCount = this.vtsService.getVtsCount();
-    this.atonCount = this.atonService.getAtonCount();
-    
-    // ✅ UPDATE LEGEND COUNTS
-    this.mapService.updateLegendCounts(this.vesselCount, this.vtsCount, this.atonCount);
-  }
-  // ✅ SETUP ATON POLLING dengan auto-refresh
-  private setupAtonPolling(): void {
-    this.atonPollingTimer = interval(this.atonPollingInterval)
+    });
+
+    // ✅ VTS data subscription
+    this.vtsService.vtsData$
       .pipe(
-        startWith(0), // Immediate first call
-        filter(() => this.atonPollingEnabled), // Only poll when enabled
-      
-        catchError(error => {
-          console.error('❌ AtoN polling error:', error);
-          // Return empty observable to continue polling
-          return EMPTY;
-        })
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
       )
-      .subscribe({
-        next: () => {
-          console.log('✅ AtoN polling completed successfully');
-        },
-        error: (error) => {
-          console.error('❌ AtoN polling subscription error:', error);
+      .subscribe((vtsData: VTS[]) => {
+        this.zone.run(() => {
+          this.vtsData = vtsData;
+          this.lastVtsUpdate = vtsData.length > 0 ? new Date() : null;
+          
+          // ✅ Update UI state
+          const currentState = this.uiState$.value;
+          this.uiState$.next({
+            ...currentState,
+            vtsCount: vtsData.length
+          });
+
+          console.log(`🏛️ VTS data updated: ${vtsData.length} stations`);
+          this.cdr.markForCheck();
+        });
+      });
+
+    // ✅ VTS loading state
+    this.vtsService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((loading: boolean) => {
+        this.zone.run(() => {
+          this.vtsLoading = loading;
+          this.cdr.markForCheck();
+        });
+      });
+
+    // ✅ AtoN data subscription
+    this.atonService.atonData$
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((atonData: AtoN[]) => {
+        this.zone.run(() => {
+          this.atonData = atonData;
+          this.lastAtonUpdate = atonData.length > 0 ? new Date() : null;
+          
+          // ✅ Update UI state
+          const currentState = this.uiState$.value;
+          this.uiState$.next({
+            ...currentState,
+            atonCount: atonData.length
+          });
+
+          console.log(`⚓ AtoN data updated: ${atonData.length} stations`);
+          this.cdr.markForCheck();
+        });
+      });
+
+    // ✅ AtoN loading state
+    this.atonService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((loading: boolean) => {
+        this.zone.run(() => {
+          this.atonLoading = loading;
+          this.cdr.markForCheck();
+        });
+      });
+
+    // ✅ OPTIMIZED: Single performance timer (instead of multiple timers)
+    interval(10000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.zone.run(() => {
+          // ✅ Update vessel service stats
+          this.vesselServiceStats = this.vesselService.getVesselServiceStats();
+          
+          // ✅ Update performance stats
+          this.componentState.performanceStats = {
+            totalVessels: this.vesselServiceStats.totalVessels,
+            realTimeUpdates: this.vesselServiceStats.realTimeUpdates,
+            connectionStatus: this.vesselServiceStats.connectionStatus,
+            renderingTime: this.vesselServiceStats.performance.renderingTime
+          };
+
+          // ✅ Update map legend counts
+          this.updateMapLegendCounts();
+          
+          // ✅ Performance warning
+          if (this.vesselServiceStats.performance.renderingTime > 1000) {
+            console.warn('⚠️ High rendering time detected:', this.vesselServiceStats.performance.renderingTime + 'ms');
+          }
+          
+          this.cdr.markForCheck();
+        });
+      });
+
+    // ✅ Setup polling with optimized intervals
+    this.setupOptimizedPolling();
+
+    // ✅ WebSocket loading complete events
+    this.webSocketService.loadingComplete$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((loadingInfo) => {
+        if (loadingInfo.hasData) {
+          this.zone.run(() => {
+            console.log('🚨 WebSocket loading complete event received');
+            const currentState = this.uiState$.value;
+            this.uiState$.next({
+              ...currentState,
+              loadingState: {
+                ...currentState.loadingState,
+                isLoading: false,
+                hasData: true,
+                lastUpdate: new Date(),
+                error: null
+              }
+            });
+            this.cdr.markForCheck();
+          });
         }
       });
   }
 
-  // ✅ ADVANCED POLLING CONTROLS
-  startVtsPolling(): void {
-    if (!this.vtsPollingEnabled) {
+  // ✅ OPTIMIZED: Polling without setTimeout memory leaks
+  private setupOptimizedPolling(): void {
+    // ✅ VTS polling with proper interval management
+    interval(30000)
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(() => this.vtsPollingEnabled && this.isConnected)
+      )
+      .subscribe(() => {
+        this.zone.run(() => {
+          this.vtsLoading = true;
+          this.vtsService.refreshVtsData();
+          
+          // ✅ Use safeSetTimeout instead of raw setTimeout
+          this.safeSetTimeout(() => {
+            this.zone.run(() => {
+              this.vtsLoading = false;
+              this.cdr.markForCheck();
+            });
+          }, 2000);
+          
+          this.cdr.markForCheck();
+        });
+      });
+
+    // ✅ AtoN polling with proper interval management
+    interval(30000)
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(() => this.atonPollingEnabled && this.isConnected)
+      )
+      .subscribe(() => {
+        this.zone.run(() => {
+          this.atonLoading = true;
+          this.atonService.refreshAtonData();
+          
+          // ✅ Use safeSetTimeout instead of raw setTimeout
+          this.safeSetTimeout(() => {
+            this.zone.run(() => {
+              this.atonLoading = false;
+              this.cdr.markForCheck();
+            });
+          }, 2000);
+          
+          this.cdr.markForCheck();
+        });
+      });
+  }
+
+  // ✅ Handle connection status changes
+  private handleConnectionStatusChange(status: string, wasConnected: boolean): void {
+    const isNowConnected = status === 'connected';
+    
+    if (isNowConnected && !wasConnected) {
+      this.showNotification('Real-time connection established', 'success');
       this.vtsPollingEnabled = true;
-      console.log('🏛️ VTS polling enabled');
-    }
-  }
-
-  stopVtsPolling(): void {
-    this.vtsPollingEnabled = false;
-    console.log('🏛️ VTS polling disabled');
-  }
-
-  startAtonPolling(): void {
-    if (!this.atonPollingEnabled) {
       this.atonPollingEnabled = true;
-      console.log('⚓ AtoN polling enabled');
+    } else if (!isNowConnected && wasConnected) {
+      this.showNotification('Real-time connection lost', 'warning');
+    }
+
+    // ✅ Update loading state based on connection
+    if (status === 'connecting') {
+      const currentState = this.uiState$.value;
+      this.uiState$.next({
+        ...currentState,
+        loadingState: {
+          ...currentState.loadingState,
+          message: 'Establishing real-time connection...',
+          isLoading: true
+        }
+      });
+    } else if (status === 'error') {
+      const currentState = this.uiState$.value;
+      this.uiState$.next({
+        ...currentState,
+        loadingState: {
+          ...currentState.loadingState,
+          message: 'Connection failed - retrying...',
+          error: 'Unable to establish WebSocket connection'
+        }
+      });
     }
   }
 
-  stopAtonPolling(): void {
-    this.atonPollingEnabled = false;
-    console.log('⚓ AtoN polling disabled');
-  }
-
-  // ✅ DYNAMIC POLLING INTERVAL CONTROL
-  updateVtsPollingInterval(newInterval: number): void {
-    if (this.vtsPollingTimer) {
-      this.vtsPollingTimer.unsubscribe();
-    }
-    this.vtsPollingInterval = newInterval;
-    this.setupVtsPolling();
-    console.log(`🏛️ VTS polling interval updated to ${newInterval}ms`);
-  }
-
-  updateAtonPollingInterval(newInterval: number): void {
-    if (this.atonPollingTimer) {
-      this.atonPollingTimer.unsubscribe();
-    }
-    this.atonPollingInterval = newInterval;
-    this.setupAtonPolling();
-    console.log(`⚓ AtoN polling interval updated to ${newInterval}ms`);
-  }
-
-  // ✅ ENHANCED VISIBILITY TOGGLES dengan polling consideration
-  toggleVtsVisibility(): void {
-    this.vtsVisible = !this.vtsVisible;
-    this.vtsService.toggleVtsVisibility(this.vtsVisible);
-    
-    // Auto-start polling when visibility is turned on
-    if (this.vtsVisible) {
-      this.startVtsPolling();
-    }
-    
-    console.log(`🏛️ VTS visibility: ${this.vtsVisible ? 'ON' : 'OFF'}`);
-  }
-
-  toggleAtonVisibility(): void {
-    this.atonVisible = !this.atonVisible;
-    this.atonService.toggleAtonVisibility(this.atonVisible);
-    
-    // Auto-start polling when visibility is turned on
-    if (this.atonVisible) {
-      this.startAtonPolling();
-    }
-    
-    console.log(`⚓ AtoN visibility: ${this.atonVisible ? 'ON' : 'OFF'}`);
-  }
-
-  // ✅ MANUAL FORCE REFRESH yang tidak mengganggu polling
-  forceRefreshVts(): void {
-    console.log('🔄 Force refreshing VTS data...');
-    this.vtsService.refreshVtsData();
-  }
-
-  forceRefreshAton(): void {
-    console.log('🔄 Force refreshing AtoN data...');
-    this.atonService.refreshAtonData();
-  }
-
-  // ✅ POLLING STATUS INDICATORS
-  getVtsPollingStatus(): { enabled: boolean; nextUpdate: string; interval: number } {
-    return {
-      enabled: this.vtsPollingEnabled,
-      nextUpdate: this.calculateNextUpdate(this.vtsPollingInterval),
-      interval: this.vtsPollingInterval / 1000 // in seconds
-    };
-  }
-
-  getAtonPollingStatus(): { enabled: boolean; nextUpdate: string; interval: number } {
-    return {
-      enabled: this.atonPollingEnabled,
-      nextUpdate: this.calculateNextUpdate(this.atonPollingInterval),
-      interval: this.atonPollingInterval / 1000 // in seconds
-    };
-  }
-
-  private calculateNextUpdate(interval: number): string {
-    const next = new Date(Date.now() + interval);
-    return next.toLocaleTimeString('id-ID');
-  }
-
-  // ✅ INITIALIZE MAP DATA dengan proper timing
+  // ✅ Initialize map data
   private initializeMapData(): void {
-    // Load VTS data setelah map ready
-    setTimeout(() => {
+    console.log('📡 Starting WebSocket connection for real-time vessel data');
+    this.webSocketService.connect();
+    
+    // ✅ Load VTS data with delay
+    this.safeSetTimeout(() => {
       console.log('🏛️ Loading VTS data...');
       this.vtsService.loadAndShowVtsMarkers();
     }, 2000);
 
-    // Load AtoN data setelah VTS dengan delay lebih lama
-    setTimeout(() => {
+    // ✅ Load AtoN data with delay
+    this.safeSetTimeout(() => {
       console.log('⚓ Loading AtoN data...');
       this.atonService.loadAndShowAtonMarkers();
     }, 4000);
-
-    // Update counts secara berkala
-    this.updateCounts();
   }
 
-  // ✅ SETUP LOADING STATE SUBSCRIPTION
-
-  // ✅ SETUP CONNECTION MONITORING
-  private setupConnectionMonitoring(): void {
-    this.connectionSubscription = this.telkomsatApi.connectionStatus$?.subscribe({
-      next: (status: string) => {
-        this.zone.run(() => {
-          this.isConnected = (status === 'connected');
-          
-          // Enable/disable polling based on connection status
-          if (this.isConnected) {
-            this.vtsPollingEnabled = true;
-            this.atonPollingEnabled = true;
-            console.log('🔌 Connection restored - polling enabled');
-          } else {
-            console.log('🔌 Connection lost - continuing polling for reconnection');
-          }
-          
-          console.log(`🔌 Connection status updated: ${status} (${this.isConnected})`);
-          this.cdr.detectChanges();
-        });
-      },
-      error: (error) => {
-        console.error('❌ Connection monitoring error:', error);
-      }
-    });
-
-    this.isConnected = this.vesselService.isApiConnected();
+  // ✅ Update map legend counts
+  private updateMapLegendCounts(): void {
+    this.mapService.updateLegendCounts(this.vesselCount, this.vtsCount, this.atonCount);
   }
 
-  // ✅ SETUP VTS SUBSCRIPTION
-  private setupVtsSubscription(): void {
-    this.vtsSubscription = this.vtsService.vtsData$.subscribe({
-      next: (vtsData: VTS[]) => {
-        this.zone.run(() => {
-          this.vtsData = vtsData;
-          this.vtsCount = vtsData.length;
-          this.lastVtsUpdate = vtsData.length > 0 ? new Date() : null;
-          
-          console.log(`🏛️ VTS data updated: ${this.vtsCount} stations`);
-          this.cdr.detectChanges();
-        });
-      },
-      error: (error) => {
-        console.error('❌ VTS subscription error:', error);
-      }
-    });
+  // ✅ Show notifications
+  private showNotification(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
+    const config = {
+      duration: type === 'error' ? 8000 : 3000,
+      panelClass: [`snackbar-${type}`],
+      verticalPosition: 'top' as const,
+      horizontalPosition: 'right' as const
+    };
 
-    // Subscribe to VTS loading state
-    this.vtsService.loading$.subscribe({
-      next: (loading: boolean) => {
-        this.zone.run(() => {
-          this.vtsLoading = loading;
-          this.cdr.detectChanges();
-        });
-      }
-    });
+    this.snackBar.open(message, 'Close', config);
   }
 
-  // ✅ SETUP ATON SUBSCRIPTION
-  private setupAtonSubscription(): void {
-    this.atonSubscription = this.atonService.atonData$.subscribe({
-      next: (atonData: AtoN[]) => {
-        this.zone.run(() => {
-          this.atonData = atonData;
-          this.atonCount = atonData.length;
-          this.lastAtonUpdate = atonData.length > 0 ? new Date() : null;
-          
-          console.log(`⚓ AtoN data updated: ${this.atonCount} stations`);
-          this.cdr.detectChanges();
-        });
-      },
-      error: (error) => {
-        console.error('❌ AtoN subscription error:', error);
-      }
-    });
-
-    // Subscribe to AtoN loading state
-    this.atonService.loading$.subscribe({
-      next: (loading: boolean) => {
-        this.zone.run(() => {
-          this.atonLoading = loading;
-          this.cdr.detectChanges();
-        });
-      }
-    });
-  }
-
-  // ✅ SETUP SYNC TIMER
-  private setupSyncTimer(): void {
-    this.syncTimer = interval(10000).subscribe(() => {
-      this.zone.run(() => {
-        this.updateCounts();
-        
-        // Sync loading state jika diperlukan
-        const serviceState = this.vesselService.getCurrentLoadingState();
-        const componentState = this.loadingState;
-        
-        if (serviceState && componentState) {
-          this.loadingState = {
-            ...componentState,
-            isLoading: serviceState.isLoading,
-            message: serviceState.message,
-            progress: serviceState.progress,
-            hasData: serviceState.hasData,
-            lastUpdate: serviceState.lastUpdate ? new Date(serviceState.lastUpdate) : null,
-            error: serviceState.error
-          };
-          this.cdr.detectChanges();
-        }
-      });
-    });
-  }
-
-  // ✅ UPDATE COUNTS
-
-
-  // ✅ ERROR HANDLERS
+  // ✅ Error handlers
   private handleInitializationError(error: any): void {
     this.zone.run(() => {
-      this.loadingState = {
-        isLoading: false,
-        message: 'Initialization failed',
-        progress: 0,
-        hasData: false,
-        lastUpdate: null,
-        error: `Failed to initialize: ${error.message || error}`
-      };
-      this.cdr.detectChanges();
+      this.componentState.hasError = true;
+      this.componentState.errorMessage = `Initialization failed: ${error.message || error}`;
+      
+      const currentState = this.uiState$.value;
+      this.uiState$.next({
+        ...currentState,
+        loadingState: {
+          isLoading: false,
+          message: 'Initialization failed',
+          progress: 0,
+          hasData: false,
+          lastUpdate: null,
+          error: this.componentState.errorMessage
+        }
+      });
+      
+      this.showNotification('Map initialization failed', 'error');
+      this.cdr.markForCheck();
     });
   }
 
-  private handleLoadingStateError(error: any): void {
-    this.zone.run(() => {
-      this.loadingState = {
-        isLoading: false,
-        message: 'State synchronization error',
-        progress: 0,
-        hasData: false,
-        lastUpdate: null,
-        error: `Sync failed: ${error.message || error}`
-      };
-      this.cdr.detectChanges();
-    });
+  // ✅ NAVIGATION
+  navigateToPOIArea(): void {
+    console.log('📍 Navigating to POI Area page');
+    window.location.href = '/poi-area';
   }
 
-  // ✅ LOADING EVENT HANDLERS
+  // ✅ EVENT HANDLERS
   onRetryConnection(): void {
     console.log('🔄 Retry connection triggered');
     
     this.zone.run(() => {
-      this.loadingState = {
-        isLoading: true,
-        message: 'Retrying connection...',
-        progress: 0,
-        hasData: false,
-        lastUpdate: null,
-        error: null
-      };
-      this.cdr.detectChanges();
+      const currentState = this.uiState$.value;
+      this.uiState$.next({
+        ...currentState,
+        loadingState: {
+          isLoading: true,
+          message: 'Retrying real-time connection...',
+          progress: 0,
+          hasData: false,
+          lastUpdate: null,
+          error: null
+        }
+      });
+      
+      this.componentState.hasError = false;
+      this.componentState.errorMessage = undefined;
+      
+      this.cdr.markForCheck();
     });
     
-    setTimeout(() => {
-      this.vesselService.refreshVesselData();
+    // ✅ Retry connections
+    this.safeSetTimeout(() => {
+      this.webSocketService.connect();
       this.refreshVtsData();
       this.refreshAtonData();
     }, 100);
   }
 
-  onRefreshData(): void {
-    console.log('🔍 Refresh all data triggered');
-    this.vesselService.refreshVesselData();
-    this.refreshVtsData();
-    this.refreshAtonData();
+  // ✅ UI METHODS
+  toggleSidebar(): void {
+    this.sidebarOpen = !this.sidebarOpen;
+    
+    if (this.sidebar) {
+      this.sidebar.toggle();
+      
+      this.safeSetTimeout(() => {
+        try {
+          this.mapService.resizeMap();
+        } catch (error) {
+          console.warn('Map resize warning:', error);
+        }
+      }, 300);
+    }
+  }
+
+  toggleStatsPanel(): void {
+    this.statsMinimized = !this.statsMinimized;
+  }
+
+  selectLayer(layerName: string): void {
+    try {
+      this.mapService.switchLayer(layerName);
+      this.showNotification(`Layer switched to ${layerName}`, 'info');
+      console.log(`🗺️ Switched to layer: ${layerName}`);
+    } catch (error) {
+      console.error('❌ Error switching layer:', error);
+      this.showNotification('Layer switch failed', 'error');
+    }
+  }
+
+  async onControlToggle(controlId: string, isEnabled: boolean): Promise<void> {
+    try {
+      await this.mapService.handleControlToggle(controlId, isEnabled);
+      
+      if (controlId === 'vts') {
+        this.vtsVisible = isEnabled;
+        this.vtsService.toggleVtsVisibility(isEnabled);
+        if (isEnabled && this.isConnected) {
+          this.vtsPollingEnabled = true;
+        }
+      }
+      
+      if (controlId === 'aton') {
+        this.atonVisible = isEnabled;
+        this.atonService.toggleAtonVisibility(isEnabled);
+        if (isEnabled && this.isConnected) {
+          this.atonPollingEnabled = true;
+        }
+      }
+      
+      this.showNotification(`${controlId.toUpperCase()} ${isEnabled ? 'enabled' : 'disabled'}`, 'info');
+      console.log(`🎛️ Control ${controlId} toggled: ${isEnabled}`);
+    } catch (error) {
+      console.error('❌ Error toggling control:', error);
+      this.showNotification('Control toggle failed', 'error');
+    }
   }
 
   // ✅ VTS METHODS
@@ -485,7 +619,18 @@ export class MapComponent implements OnInit, OnDestroy {
 
   focusOnVts(vtsId: string): void {
     this.vtsService.focusOnVts(vtsId);
-    console.log(`🎯 Focused on VTS: ${vtsId}`);
+    this.showNotification(`Focused on VTS: ${vtsId}`, 'info');
+  }
+
+  toggleVtsVisibility(): void {
+    this.vtsVisible = !this.vtsVisible;
+    this.vtsService.toggleVtsVisibility(this.vtsVisible);
+    
+    if (this.vtsVisible && this.isConnected) {
+      this.vtsPollingEnabled = true;
+    }
+    
+    this.showNotification(`VTS visibility: ${this.vtsVisible ? 'ON' : 'OFF'}`, 'info');
   }
 
   getVtsStatusSummary(): { active: number; inactive: number } {
@@ -502,7 +647,18 @@ export class MapComponent implements OnInit, OnDestroy {
 
   focusOnAton(atonId: string): void {
     this.atonService.focusOnAton(atonId);
-    console.log(`🎯 Focused on AtoN: ${atonId}`);
+    this.showNotification(`Focused on AtoN: ${atonId}`, 'info');
+  }
+
+  toggleAtonVisibility(): void {
+    this.atonVisible = !this.atonVisible;
+    this.atonService.toggleAtonVisibility(this.atonVisible);
+    
+    if (this.atonVisible && this.isConnected) {
+      this.atonPollingEnabled = true;
+    }
+    
+    this.showNotification(`AtoN visibility: ${this.atonVisible ? 'ON' : 'OFF'}`, 'info');
   }
 
   getAtonStatusSummary(): { active: number; inactive: number } {
@@ -511,67 +667,21 @@ export class MapComponent implements OnInit, OnDestroy {
     return { active, inactive };
   }
 
-  // ✅ SIDEBAR MANAGEMENT
-  toggleSidebar(): void {
-    this.sidebarOpen = !this.sidebarOpen;
-    
-    if (this.sidebar) {
-      this.sidebar.toggle();
-      
-      setTimeout(() => {
-        try {
-          this.mapService.resizeMap();
-        } catch (error) {
-          console.warn('Map resize warning:', error);
-        }
-      }, 300);
-    }
+  // ✅ WEBSOCKET METHODS
+  subscribeToVessel(mmsi: number): void {
+    this.webSocketService.subscribeToVessel(mmsi);
+    this.showNotification(`Tracking vessel ${mmsi}`, 'info');
   }
 
-  toggleStatsPanel(): void {
-    this.statsMinimized = !this.statsMinimized;
+  subscribeToArea(bounds: { north: number; south: number; east: number; west: number }): void {
+    this.webSocketService.subscribeToArea(bounds);
+    this.showNotification('Area tracking enabled', 'info');
   }
 
-  // ✅ MAP CONTROLS
-  selectLayer(layerName: string): void {
-    try {
-      this.mapService.switchLayer(layerName);
-      console.log(`🗺️ Switched to layer: ${layerName}`);
-    } catch (error) {
-      console.error('❌ Error switching layer:', error);
-    }
-  }
-
-  async onControlToggle(controlId: string, isEnabled: boolean): Promise<void> {
-    try {
-      await this.mapService.handleControlToggle(controlId, isEnabled);
-      
-      // ✅ HANDLE VTS CONTROL TOGGLE
-      if (controlId === 'vts') {
-        this.vtsVisible = isEnabled;
-        this.vtsService.toggleVtsVisibility(isEnabled);
-        
-        // Auto-control polling based on visibility
-        if (isEnabled) {
-          this.startVtsPolling();
-        }
-      }
-      
-      // ✅ HANDLE ATON CONTROL TOGGLE
-      if (controlId === 'aton') {
-        this.atonVisible = isEnabled;
-        this.atonService.toggleAtonVisibility(isEnabled);
-        
-        // Auto-control polling based on visibility
-        if (isEnabled) {
-          this.startAtonPolling();
-        }
-      }
-      
-      console.log(`🎛️ Control ${controlId} toggled: ${isEnabled}`);
-    } catch (error) {
-      console.error('❌ Error toggling control:', error);
-    }
+  forceAggressiveCollection(): void {
+    console.log('⚡ Triggering aggressive data collection');
+    this.webSocketService.forceAggressiveCollection();
+    this.showNotification('Aggressive data collection triggered', 'info');
   }
 
   // ✅ UTILITY METHODS
@@ -595,32 +705,40 @@ export class MapComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ✅ MAP ZOOM CONTROLS
-  zoomIn(): void {
-    try {
-      const map = this.mapService.getMap();
-      if (map) {
-        map.zoomIn();
-        console.log('🔍 Zoom in triggered');
-      }
-    } catch (error) {
-      console.warn('Zoom in warning:', error);
-    }
+  getRealtimeStats(): {
+    connectionStatus: string;
+    totalVessels: number;
+    realTimeUpdates: number;
+    connectedClients: number;
+    uptime: string;
+    memoryUsage: string;
+  } {
+    const stats = this.vesselServiceStats;
+    const connectionUptime = this.uiState$.value.connectionStats.connectedAt 
+      ? new Date().getTime() - this.uiState$.value.connectionStats.connectedAt.getTime()
+      : 0;
+    
+    return {
+      connectionStatus: stats.connectionStatus,
+      totalVessels: stats.totalVessels,
+      realTimeUpdates: stats.realTimeUpdates,
+      connectedClients: this.uiState$.value.connectionStats.connected ? 1 : 0,
+      uptime: this.formatDuration(connectionUptime),
+      memoryUsage: stats.performance.memoryUsage
+    };
   }
 
-  zoomOut(): void {
-    try {
-      const map = this.mapService.getMap();
-      if (map) {
-        map.zoomOut();
-        console.log('🔍 Zoom out triggered');
-      }
-    } catch (error) {
-      console.warn('Zoom out warning:', error);
-    }
+  private formatDuration(ms: number): string {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+    return `${seconds}s`;
   }
 
-  // ✅ DEBUGGING METHODS (simplified)
+  // ✅ DEBUG METHODS
   logDebugInfo(): void {
     console.log('🐛 Map Debug Info:', {
       vessels: this.vesselCount,
@@ -637,71 +755,52 @@ export class MapComponent implements OnInit, OnDestroy {
         polling: this.atonPollingEnabled
       },
       connected: this.isConnected,
-      loadingComplete: !this.loadingState.isLoading && this.loadingState.hasData
+      webSocketStats: this.uiState$.value.connectionStats,
+      realTimeStats: this.getRealtimeStats(),
+      loadingComplete: !this.loadingState.isLoading && this.loadingState.hasData,
+      activeTimeouts: this.timeoutIds.size,
+      activeIntervals: this.intervalIds.size
     });
-  }
-
-  // ✅ MANUAL CONTROLS untuk testing marker visibility
-  testAllMarkers(): void {
-    console.log('🧪 Testing all markers visibility...');
-    console.log('Vessels:', this.vesselCount, 'markers');
-    console.log('VTS:', this.vtsCount, 'markers, visible:', this.vtsVisible, 'polling:', this.vtsPollingEnabled);
-    console.log('AtoN:', this.atonCount, 'markers, visible:', this.atonVisible, 'polling:', this.atonPollingEnabled);
-    
-    // Force map refresh
-    const map = this.mapService.getMap();
-    if (map) {
-      map.invalidateSize();
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 1000);
-    }
   }
 
   refreshAllData(): void {
     console.log('🔄 Manual refresh all data');
-    this.vesselService.refreshVesselData();
-    this.forceRefreshVts();
-    this.forceRefreshAton();
+    this.webSocketService.connect();
+    this.refreshVtsData();
+    this.refreshAtonData();
   }
 
-  // ✅ LIFECYCLE CLEANUP dengan polling timers
+  // ✅ OPTIMIZED CLEANUP with proper resource management
   ngOnDestroy(): void {
-    console.log('🧹 MapComponent cleanup started');
+    console.log('🧹 MapComponent cleanup started with memory optimization');
     
-    // Stop polling timers first
-    if (this.vtsPollingTimer) {
-      this.vtsPollingTimer.unsubscribe();
-      console.log('✅ VTS polling timer cleaned up');
-    }
+    // ✅ Clear all timeouts
+    this.timeoutIds.forEach(id => {
+      clearTimeout(id);
+    });
+    this.timeoutIds.clear();
+    console.log('✅ All timeouts cleared');
     
-    if (this.atonPollingTimer) {
-      this.atonPollingTimer.unsubscribe();
-      console.log('✅ AtoN polling timer cleaned up');
-    }
+    // ✅ Clear all intervals
+    this.intervalIds.forEach(id => {
+      clearInterval(id);
+    });
+    this.intervalIds.clear();
+    console.log('✅ All intervals cleared');
     
-
+    // ✅ Complete UI state subject
+    this.uiState$.complete();
+    console.log('✅ UI state subject completed');
     
-    if (this.connectionSubscription) {
-      this.connectionSubscription.unsubscribe();
-      console.log('✅ Connection subscription cleaned up');
-    }
+    // ✅ Complete destroy subject (this unsubscribes all subscriptions)
+    this.destroy$.next();
+    this.destroy$.complete();
+    console.log('✅ All subscriptions unsubscribed via destroy subject');
     
-    if (this.vtsSubscription) {
-      this.vtsSubscription.unsubscribe();
-      console.log('✅ VTS subscription cleaned up');
-    }
+    // ✅ Cleanup WebSocket service
+    this.webSocketService.cleanup();
+    console.log('✅ WebSocket service cleaned up');
     
-    if (this.atonSubscription) {
-      this.atonSubscription.unsubscribe();
-      console.log('✅ AtoN subscription cleaned up');
-    }
-    
-    if (this.syncTimer) {
-      this.syncTimer.unsubscribe();
-      console.log('✅ Sync timer cleaned up');
-    }
-    
-    console.log('✅ MapComponent cleanup completed');
+    console.log('✅ MapComponent cleanup completed with zero memory leaks');
   }
 }

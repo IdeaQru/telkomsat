@@ -1,0 +1,65 @@
+.playback-controls {
+  .date-inputs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .date-field {
+      flex: 1;
+    }
+  }
+
+  .vessel-select {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .playback-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    .action-btn {
+      width: 100%;
+      
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .speed-control {
+    margin-bottom: 16px;
+
+    .speed-select {
+      width: 100%;
+    }
+  }
+
+  .playback-progress {
+    margin-bottom: 16px;
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+  }
+
+  .playback-options {
+    .options-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+    }
+
+    mat-checkbox {
+      display: block;
+      margin-bottom: 8px;
+    }
+  }
+}

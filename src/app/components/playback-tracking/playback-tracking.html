@@ -1,0 +1,159 @@
+<div class="section-container">
+  <div class="section-header batik-accent">
+    <mat-icon class="section-icon">history</mat-icon>
+    <h3 class="section-title">Playback Tracking</h3>
+  </div>
+
+  <div class="playback-controls">
+    <!-- Date Range Selection -->
+    <div class="control-card batik-card">
+      <div class="control-info">
+        <div class="control-icon-container">
+          <mat-icon class="control-icon">date_range</mat-icon>
+        </div>
+        <div class="control-details">
+          <h4 class="control-name">Date Range</h4>
+          <p class="control-description">Select playback period</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Date Inputs -->
+    <div class="date-inputs">
+      <mat-form-field appearance="outline" class="date-field">
+        <mat-label>Start Date</mat-label>
+        <input matInput 
+               [matDatepicker]="startPicker" 
+               [(ngModel)]="playbackStartDate"
+               (dateChange)="onDateChange()">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="date-field">
+        <mat-label>End Date</mat-label>
+        <input matInput 
+               [matDatepicker]="endPicker" 
+               [(ngModel)]="playbackEndDate"
+               (dateChange)="onDateChange()">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <!-- Vessel Selection -->
+    <div class="control-card batik-card">
+      <div class="control-info">
+        <div class="control-icon-container">
+          <mat-icon class="control-icon">directions_boat</mat-icon>
+        </div>
+        <div class="control-details">
+          <h4 class="control-name">Vessel Filter</h4>
+          <p class="control-description">Select vessels to track</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vessel Multi-Select -->
+    <mat-form-field appearance="outline" class="vessel-select">
+      <mat-label>Select Vessels</mat-label>
+      <mat-select [(value)]="selectedVesselsForPlayback" 
+                  multiple
+                  (selectionChange)="onVesselSelectionChange()">
+        <mat-option *ngFor="let vessel of availableVessels" 
+                    [value]="vessel.mmsi">
+          {{ vessel.name || vessel.mmsi }} ({{ vessel.mmsi }})
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Playback Controls -->
+    <div class="control-card batik-card">
+      <div class="control-info">
+        <div class="control-icon-container">
+          <mat-icon class="control-icon">play_circle</mat-icon>
+        </div>
+        <div class="control-details">
+          <h4 class="control-name">Playback Control</h4>
+          <p class="control-description">Control track playback</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Playback Action Buttons -->
+    <div class="playback-actions">
+      <button mat-raised-button 
+              color="primary"
+              [disabled]="!canStartPlayback()"
+              (click)="onStartPlayback()"
+              class="action-btn">
+        <mat-icon>play_arrow</mat-icon>
+        Start Playback
+      </button>
+
+      <button mat-raised-button 
+              color="accent"
+              [disabled]="!playbackState.isActive"
+              (click)="onPausePlayback()"
+              class="action-btn">
+        <mat-icon>pause</mat-icon>
+        Pause
+      </button>
+
+      <button mat-raised-button 
+              [disabled]="!playbackState.isActive"
+              (click)="onStopPlayback()"
+              class="action-btn">
+        <mat-icon>stop</mat-icon>
+        Stop
+      </button>
+    </div>
+
+    <!-- Playback Speed Control -->
+    <div class="speed-control" *ngIf="playbackState.isActive">
+      <mat-form-field appearance="outline" class="speed-select">
+        <mat-label>Playback Speed</mat-label>
+        <mat-select [(value)]="playbackSpeed" 
+                    (selectionChange)="onSpeedChange()">
+          <mat-option *ngFor="let speed of speedOptions" 
+                      [value]="speed.value">
+            {{ speed.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Playback Progress -->
+    <div class="playback-progress" *ngIf="playbackState.isActive">
+      <mat-progress-bar 
+        mode="determinate" 
+        [value]="playbackState.progress"
+        color="accent">
+      </mat-progress-bar>
+      <div class="progress-info">
+        <span class="current-time">{{ playbackState.currentTime | date:'dd/MM/yyyy HH:mm' }}</span>
+        <span class="duration">{{ playbackState.duration }}h</span>
+      </div>
+    </div>
+
+    <!-- Playback Options -->
+    <div class="playback-options">
+      <h4 class="options-title">Display Options</h4>
+      
+      <mat-checkbox [(ngModel)]="showPlaybackTracks" 
+                    (change)="onPlaybackOptionChange('tracks', $event.checked)">
+        Show Tracks
+      </mat-checkbox>
+      
+      <mat-checkbox [(ngModel)]="showPlaybackSpeed" 
+                    (change)="onPlaybackOptionChange('speed', $event.checked)">
+        Show Speed
+      </mat-checkbox>
+      
+      <mat-checkbox [(ngModel)]="showPlaybackEvents" 
+                    (change)="onPlaybackOptionChange('events', $event.checked)">
+        Show Events
+      </mat-checkbox>
+    </div>
+  </div>
+</div>
