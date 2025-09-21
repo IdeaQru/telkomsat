@@ -1,0 +1,340 @@
+2025-09-22 02:35:08 +07:00: [1m[33m
+2025-09-22 02:35:08 +07:00: Warning: This is a simple server for use in testing or debugging Angular applications
+2025-09-22 02:35:08 +07:00: locally. It hasn't been reviewed for security issues.
+2025-09-22 02:35:08 +07:00: 
+2025-09-22 02:35:08 +07:00: Binding this server to an open connection can result in compromising your application or
+2025-09-22 02:35:08 +07:00: computer. Using a different host than the one passed to the "--host" flag might result in
+2025-09-22 02:35:08 +07:00: websocket connection issues.
+2025-09-22 02:35:08 +07:00:     [39m[22m
+2025-09-22 02:35:19 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:35:19 +07:00: 
+2025-09-22 02:35:19 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:35:19 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:35:19 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:35:19 +07:00: 
+2025-09-22 02:35:19 +07:00: [39m[22m
+2025-09-22 02:35:34 +07:00: [1m[31mERROR ReferenceError: window is not defined
+2025-09-22 02:35:34 +07:00:     at createDevelopmentUrls (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/chunk-L3U75BCQ.mjs:12:25)
+2025-09-22 02:35:34 +07:00:     at eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\vite-root\my-leaflet-map\src\environments\environment.development.ts:23:14)
+2025-09-22 02:35:34 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:35:34 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:35:34 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)
+2025-09-22 02:35:34 +07:00:     at async SSRCompatModuleRunner.cachedRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1037:73)
+2025-09-22 02:35:34 +07:00:     at async eval (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/map-TMNJFBA7.mjs:5:31)
+2025-09-22 02:35:34 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:35:34 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:35:34 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)[39m[22m
+2025-09-22 02:35:57 +07:00: [1m[31mERROR ReferenceError: window is not defined
+2025-09-22 02:35:57 +07:00:     at createDevelopmentUrls (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/chunk-L3U75BCQ.mjs:12:25)
+2025-09-22 02:35:57 +07:00:     at eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\vite-root\my-leaflet-map\src\environments\environment.development.ts:23:14)
+2025-09-22 02:35:57 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:35:57 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:35:57 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)
+2025-09-22 02:35:57 +07:00:     at async SSRCompatModuleRunner.cachedRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1037:73)
+2025-09-22 02:35:57 +07:00:     at async eval (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/map-TMNJFBA7.mjs:5:31)
+2025-09-22 02:35:57 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:35:57 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:35:57 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)[39m[22m
+2025-09-22 02:37:46 +07:00: [1m[33m
+2025-09-22 02:37:46 +07:00: Warning: This is a simple server for use in testing or debugging Angular applications
+2025-09-22 02:37:46 +07:00: locally. It hasn't been reviewed for security issues.
+2025-09-22 02:37:46 +07:00: 
+2025-09-22 02:37:46 +07:00: Binding this server to an open connection can result in compromising your application or
+2025-09-22 02:37:46 +07:00: computer. Using a different host than the one passed to the "--host" flag might result in
+2025-09-22 02:37:46 +07:00: websocket connection issues.
+2025-09-22 02:37:46 +07:00:     [39m[22m
+2025-09-22 02:37:54 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:37:54 +07:00: 
+2025-09-22 02:37:54 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:37:54 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:37:54 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:37:54 +07:00: 
+2025-09-22 02:37:54 +07:00: [39m[22m
+2025-09-22 02:37:59 +07:00: [1m[31mERROR ReferenceError: window is not defined
+2025-09-22 02:37:59 +07:00:     at createDevelopmentUrls (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/chunk-L3U75BCQ.mjs:12:25)
+2025-09-22 02:37:59 +07:00:     at eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\vite-root\my-leaflet-map\src\environments\environment.development.ts:23:14)
+2025-09-22 02:37:59 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:37:59 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:37:59 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)
+2025-09-22 02:37:59 +07:00:     at async SSRCompatModuleRunner.cachedRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1037:73)
+2025-09-22 02:37:59 +07:00:     at async eval (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/map-TMNJFBA7.mjs:5:31)
+2025-09-22 02:37:59 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:37:59 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:37:59 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)[39m[22m
+2025-09-22 02:38:13 +07:00: [1m[31mERROR ReferenceError: window is not defined
+2025-09-22 02:38:13 +07:00:     at createDevelopmentUrls (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/chunk-L3U75BCQ.mjs:12:25)
+2025-09-22 02:38:13 +07:00:     at eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\vite-root\my-leaflet-map\src\environments\environment.development.ts:23:14)
+2025-09-22 02:38:13 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:38:13 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:38:13 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)
+2025-09-22 02:38:13 +07:00:     at async SSRCompatModuleRunner.cachedRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1037:73)
+2025-09-22 02:38:13 +07:00:     at async eval (D:/Project/aisNestJS/my-leaflet-Telkomsat/.angular/vite-root/my-leaflet-map/map-TMNJFBA7.mjs:5:31)
+2025-09-22 02:38:13 +07:00:     at async ESModulesEvaluator.runInlinedModule (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:910:3)
+2025-09-22 02:38:13 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/module-runner.js:1119:59)
+2025-09-22 02:38:13 +07:00:     at async SSRCompatModuleRunner.directRequest (file:///D:/Project/aisNestJS/my-leaflet-Telkomsat/node_modules/vite/dist/node/chunks/dep-CMEinpL-.js:18901:22)[39m[22m
+2025-09-22 02:39:15 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:39:15 +07:00: 
+2025-09-22 02:39:15 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:39:15 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:39:15 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:39:15 +07:00: 
+2025-09-22 02:39:15 +07:00: [39m[22m
+2025-09-22 02:39:17 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:39:17 +07:00: 
+2025-09-22 02:39:17 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:39:17 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:39:17 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:39:17 +07:00: 
+2025-09-22 02:39:17 +07:00: [39m[22m
+2025-09-22 02:39:18 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:39:18 +07:00: 
+2025-09-22 02:39:18 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:39:18 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:39:18 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:39:18 +07:00: 
+2025-09-22 02:39:18 +07:00: [39m[22m
+2025-09-22 02:39:30 +07:00: [1m[33m
+2025-09-22 02:39:30 +07:00: Warning: This is a simple server for use in testing or debugging Angular applications
+2025-09-22 02:39:30 +07:00: locally. It hasn't been reviewed for security issues.
+2025-09-22 02:39:30 +07:00: 
+2025-09-22 02:39:30 +07:00: Binding this server to an open connection can result in compromising your application or
+2025-09-22 02:39:30 +07:00: computer. Using a different host than the one passed to the "--host" flag might result in
+2025-09-22 02:39:30 +07:00: websocket connection issues.
+2025-09-22 02:39:30 +07:00:     [39m[22m
+2025-09-22 02:39:40 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:39:40 +07:00: 
+2025-09-22 02:39:40 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:39:40 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:39:40 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:39:40 +07:00: 
+2025-09-22 02:39:40 +07:00: [39m[22m
+2025-09-22 02:39:56 +07:00: [1m[33mNG02801: Angular detected that `HttpClient` is not configured to use `fetch` APIs. It's strongly recommended to enable `fetch` for applications that use Server-Side Rendering for better performance and compatibility. To enable `fetch`, add the `withFetch()` to the `provideHttpClient()` call at the root of the application.[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[31m❌ Error in ngOnInit: ReferenceError: window is not defined
+2025-09-22 02:39:57 +07:00:     at _MapComponent.safeSetTimeout (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:173:23)
+2025-09-22 02:39:57 +07:00:     at _MapComponent.initializeMapData (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:463:10)
+2025-09-22 02:39:57 +07:00:     at _MapComponent.ngOnInit (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:199:12)
+2025-09-22 02:39:57 +07:00:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[33m⚠️ Endpoint /ais-data/current failed: fetch failed[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[31muncaughtException ReferenceError: window is not defined
+2025-09-22 02:39:57 +07:00:     at _VesselService.cleanup (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\services\vessel-service.ts:970:5)
+2025-09-22 02:39:57 +07:00:     at _VesselService.ngOnDestroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\services\vessel-service.ts:103:10)
+2025-09-22 02:39:57 +07:00:     at R3Injector.destroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:1575:17)
+2025-09-22 02:39:57 +07:00:     at destroyListener (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23534:49)
+2025-09-22 02:39:57 +07:00:     at eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23701:46)
+2025-09-22 02:39:57 +07:00:     at Set.forEach (<anonymous>)
+2025-09-22 02:39:57 +07:00:     at _PlatformRef.destroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23701:24)
+2025-09-22 02:39:57 +07:00:     at Timeout.eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-GRQ5DHXS.js:27991:21)
+2025-09-22 02:39:57 +07:00:     at listOnTimeout (node:internal/timers:594:17)
+2025-09-22 02:39:57 +07:00:     at process.processTimers (node:internal/timers:529:7)[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[31m❌ Backend connection test failed: TypeError: fetch failed
+2025-09-22 02:39:57 +07:00:     at node:internal/deps/undici/undici:13484:13
+2025-09-22 02:39:57 +07:00:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-22 02:39:57 +07:00:     at async Object.testConnection (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\vite-root\my-leaflet-map\src\environments\environment.development.ts:144:21) {
+2025-09-22 02:39:57 +07:00:   [cause]: Error: connect ECONNREFUSED ::1:3770
+2025-09-22 02:39:57 +07:00:       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1615:16) {
+2025-09-22 02:39:57 +07:00:     errno: -4078,
+2025-09-22 02:39:57 +07:00:     code: 'ECONNREFUSED',
+2025-09-22 02:39:57 +07:00:     syscall: 'connect',
+2025-09-22 02:39:57 +07:00:     address: '::1',
+2025-09-22 02:39:57 +07:00:     port: 3770
+2025-09-22 02:39:57 +07:00:   }
+2025-09-22 02:39:57 +07:00: }[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[33m⚠️ Backend at localhost:3770 is not reachable. Make sure backend server is running.[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[33m⚠️ Endpoint /ais-data/stats failed: fetch failed[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[33m⚠️ Endpoint /telkomsat/health failed: fetch failed[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[31m❌ All backend endpoints failed[39m[22m
+2025-09-22 02:39:57 +07:00: [1m[33m⚠️ Backend not available, starting REST API fallback[39m[22m
+2025-09-22 02:41:53 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:41:53 +07:00: 
+2025-09-22 02:41:53 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:41:53 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:41:53 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:41:53 +07:00: 
+2025-09-22 02:41:53 +07:00: [39m[22m
+2025-09-22 02:41:54 +07:00: [1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2323: Cannot redeclare exported variable 'developmentUtils'.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00:     src/environments/environment.development.ts:193:13:
+2025-09-22 02:41:54 +07:00: [37m      193 │ export const [32mdevelopmentUtils[37m = {
+2025-09-22 02:41:54 +07:00:           ╵              [32m~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00: [31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2323: Cannot redeclare exported variable 'developmentUtils'.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00:     src/environments/environment.development.ts:338:9:
+2025-09-22 02:41:54 +07:00: [37m      338 │ export { [32mdevelopmentUtils[37m, getLocalIPAddress, detectBrowserLocalI...
+2025-09-22 02:41:54 +07:00:           ╵          [32m~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00: [31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2484: Export declaration conflicts with exported declaration of 'developmentUtils'.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00:     src/environments/environment.development.ts:338:9:
+2025-09-22 02:41:54 +07:00: [37m      338 │ export { [32mdevelopmentUtils[37m, getLocalIPAddress, detectBrowserLocalI...
+2025-09-22 02:41:54 +07:00:           ╵          [32m~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:41:54 +07:00: 
+2025-09-22 02:41:54 +07:00: [39m[22m
+2025-09-22 02:43:28 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:43:28 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:43:28 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: [39m[22m
+2025-09-22 02:43:28 +07:00: [1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7005: Variable 'htt' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00:     src/environments/environment.development.ts:255:14:
+2025-09-22 02:43:28 +07:00: [37m      255 │         const [32mhtt[37m
+2025-09-22 02:43:28 +07:00:           ╵               [32m~~~[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: [31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: '}' expected.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00:     src/environments/environment.development.ts:256:0:
+2025-09-22 02:43:28 +07:00: [37m      256 │ [32m[37m
+2025-09-22 02:43:28 +07:00:           ╵ [32m^[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00:   The parser expected to find a '}' to match the '{' token here.
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00:     src/environments/environment.development.ts:254:29:
+2025-09-22 02:43:28 +07:00: [37m      254 │       localIPs.forEach(ip => [32m{[37m
+2025-09-22 02:43:28 +07:00:           ╵                              [32m^[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: [31mX [41;31m[[41;97mERROR[41;31m][0m [1mThe constant "htt" must be initialized[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00:     src/environments/environment.ts:222:22:
+2025-09-22 02:43:28 +07:00: [37m      222 │                 const [32mhtt[37m;
+2025-09-22 02:43:28 +07:00:           ╵                       [32m~~~[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: [31mX [41;31m[[41;97mERROR[41;31m][0m [1mThe constant "htt" must be initialized[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00:     src/environments/environment.ts:222:22:
+2025-09-22 02:43:28 +07:00: [37m      222 │                 const [32mhtt[37m;
+2025-09-22 02:43:28 +07:00:           ╵                       [32m~~~[0m
+2025-09-22 02:43:28 +07:00: 
+2025-09-22 02:43:28 +07:00: [39m[22m
+2025-09-22 02:43:37 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:37 +07:00: 
+2025-09-22 02:43:37 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:43:37 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:43:37 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:43:37 +07:00: 
+2025-09-22 02:43:37 +07:00: [39m[22m
+2025-09-22 02:43:37 +07:00: [1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: '}' expected.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:37 +07:00: 
+2025-09-22 02:43:37 +07:00:     src/environments/environment.development.ts:320:0:
+2025-09-22 02:43:37 +07:00: [37m      320 │ [32m[37m
+2025-09-22 02:43:37 +07:00:           ╵ [32m^[0m
+2025-09-22 02:43:37 +07:00: 
+2025-09-22 02:43:37 +07:00:   The parser expected to find a '}' to match the '{' token here.
+2025-09-22 02:43:37 +07:00: 
+2025-09-22 02:43:37 +07:00:     src/environments/environment.development.ts:319:13:
+2025-09-22 02:43:37 +07:00: [37m      319 │       } else [32m{[37m
+2025-09-22 02:43:37 +07:00:           ╵              [32m^[0m
+2025-09-22 02:43:37 +07:00: 
+2025-09-22 02:43:37 +07:00: [39m[22m
+2025-09-22 02:43:40 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:40 +07:00: 
+2025-09-22 02:43:40 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:43:40 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:43:40 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:43:40 +07:00: 
+2025-09-22 02:43:40 +07:00: [39m[22m
+2025-09-22 02:43:40 +07:00: [1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: '}' expected.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:40 +07:00: 
+2025-09-22 02:43:40 +07:00:     src/environments/environment.development.ts:322:7:
+2025-09-22 02:43:40 +07:00: [37m      322 │       }[32m[37m
+2025-09-22 02:43:40 +07:00:           ╵        [32m^[0m
+2025-09-22 02:43:40 +07:00: 
+2025-09-22 02:43:40 +07:00:   The parser expected to find a '}' to match the '{' token here.
+2025-09-22 02:43:40 +07:00: 
+2025-09-22 02:43:40 +07:00:     src/environments/environment.development.ts:314:54:
+2025-09-22 02:43:40 +07:00: [37m      314 │     developmentUtils.testConnection().then(success => [32m{[37m
+2025-09-22 02:43:40 +07:00:           ╵                                                       [32m^[0m
+2025-09-22 02:43:40 +07:00: 
+2025-09-22 02:43:40 +07:00: [39m[22m
+2025-09-22 02:43:41 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:41 +07:00: 
+2025-09-22 02:43:41 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:43:41 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:43:41 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:43:41 +07:00: 
+2025-09-22 02:43:41 +07:00: [39m[22m
+2025-09-22 02:43:41 +07:00: [1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: '}' expected.[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:41 +07:00: 
+2025-09-22 02:43:41 +07:00:     src/environments/environment.development.ts:323:7:
+2025-09-22 02:43:41 +07:00: [37m      323 │     });[32m[37m
+2025-09-22 02:43:41 +07:00:           ╵        [32m^[0m
+2025-09-22 02:43:41 +07:00: 
+2025-09-22 02:43:41 +07:00:   The parser expected to find a '}' to match the '{' token here.
+2025-09-22 02:43:41 +07:00: 
+2025-09-22 02:43:41 +07:00:     src/environments/environment.development.ts:313:19:
+2025-09-22 02:43:41 +07:00: [37m      313 │   setTimeout(() => [32m{[37m
+2025-09-22 02:43:41 +07:00:           ╵                    [32m^[0m
+2025-09-22 02:43:41 +07:00: 
+2025-09-22 02:43:41 +07:00: [39m[22m
+2025-09-22 02:43:43 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:43:43 +07:00: 
+2025-09-22 02:43:43 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:43:43 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:43:43 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:43:43 +07:00: 
+2025-09-22 02:43:43 +07:00: [39m[22m
+2025-09-22 02:43:44 +07:00: [1m[31m❌ Error in ngOnInit: ReferenceError: window is not defined
+2025-09-22 02:43:44 +07:00:     at _MapComponent.safeSetTimeout (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:173:23)
+2025-09-22 02:43:44 +07:00:     at _MapComponent.initializeMapData (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:463:10)
+2025-09-22 02:43:44 +07:00:     at _MapComponent.ngOnInit (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:199:12)
+2025-09-22 02:43:44 +07:00:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m[22m
+2025-09-22 02:43:44 +07:00: [1m[33m⚠️ Endpoint /ais-data/current failed: fetch failed[39m[22m
+2025-09-22 02:43:44 +07:00: [1m[31muncaughtException ReferenceError: window is not defined
+2025-09-22 02:43:44 +07:00:     at _VesselService.cleanup (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\services\vessel-service.ts:970:5)
+2025-09-22 02:43:44 +07:00:     at _VesselService.ngOnDestroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\services\vessel-service.ts:103:10)
+2025-09-22 02:43:44 +07:00:     at R3Injector.destroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:1575:17)
+2025-09-22 02:43:44 +07:00:     at destroyListener (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23534:49)
+2025-09-22 02:43:44 +07:00:     at eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23701:46)
+2025-09-22 02:43:44 +07:00:     at Set.forEach (<anonymous>)
+2025-09-22 02:43:44 +07:00:     at _PlatformRef.destroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23701:24)
+2025-09-22 02:43:44 +07:00:     at Timeout.eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-GRQ5DHXS.js:27991:21)
+2025-09-22 02:43:44 +07:00:     at listOnTimeout (node:internal/timers:594:17)
+2025-09-22 02:43:44 +07:00:     at process.processTimers (node:internal/timers:529:7)[39m[22m
+2025-09-22 02:43:44 +07:00: [1m[33m⚠️ Endpoint /ais-data/stats failed: fetch failed[39m[22m
+2025-09-22 02:43:44 +07:00: [1m[33m⚠️ Endpoint /telkomsat/health failed: fetch failed[39m[22m
+2025-09-22 02:43:44 +07:00: [1m[31m❌ All backend endpoints failed[39m[22m
+2025-09-22 02:43:44 +07:00: [1m[33m⚠️ Backend not available, starting REST API fallback[39m[22m
+2025-09-22 02:44:19 +07:00: [1m[33m
+2025-09-22 02:44:19 +07:00: Warning: This is a simple server for use in testing or debugging Angular applications
+2025-09-22 02:44:19 +07:00: locally. It hasn't been reviewed for security issues.
+2025-09-22 02:44:19 +07:00: 
+2025-09-22 02:44:19 +07:00: Binding this server to an open connection can result in compromising your application or
+2025-09-22 02:44:19 +07:00: computer. Using a different host than the one passed to the "--host" flag might result in
+2025-09-22 02:44:19 +07:00: websocket connection issues.
+2025-09-22 02:44:19 +07:00:     [39m[22m
+2025-09-22 02:44:30 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:44:30 +07:00: 
+2025-09-22 02:44:30 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:44:30 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:44:30 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:44:30 +07:00: 
+2025-09-22 02:44:30 +07:00: [39m[22m
+2025-09-22 02:44:42 +07:00: [1m[33mNG02801: Angular detected that `HttpClient` is not configured to use `fetch` APIs. It's strongly recommended to enable `fetch` for applications that use Server-Side Rendering for better performance and compatibility. To enable `fetch`, add the `withFetch()` to the `provideHttpClient()` call at the root of the application.[39m[22m
+2025-09-22 02:44:42 +07:00: [1m[31m❌ Error in ngOnInit: ReferenceError: window is not defined
+2025-09-22 02:44:42 +07:00:     at _MapComponent.safeSetTimeout (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:173:23)
+2025-09-22 02:44:42 +07:00:     at _MapComponent.initializeMapData (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:463:10)
+2025-09-22 02:44:42 +07:00:     at _MapComponent.ngOnInit (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\map\map.ts:199:12)
+2025-09-22 02:44:42 +07:00:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m[22m
+2025-09-22 02:44:42 +07:00: [1m[33m⚠️ Endpoint /ais-data/current failed: fetch failed[39m[22m
+2025-09-22 02:44:43 +07:00: [1m[31muncaughtException ReferenceError: window is not defined
+2025-09-22 02:44:43 +07:00:     at _VesselService.cleanup (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\services\vessel-service.ts:970:5)
+2025-09-22 02:44:43 +07:00:     at _VesselService.ngOnDestroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\src\app\services\vessel-service.ts:103:10)
+2025-09-22 02:44:43 +07:00:     at R3Injector.destroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:1575:17)
+2025-09-22 02:44:43 +07:00:     at destroyListener (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23534:49)
+2025-09-22 02:44:43 +07:00:     at eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23701:46)
+2025-09-22 02:44:43 +07:00:     at Set.forEach (<anonymous>)
+2025-09-22 02:44:43 +07:00:     at _PlatformRef.destroy (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-N3XVVJ2P.js:23701:24)
+2025-09-22 02:44:43 +07:00:     at Timeout.eval (D:\Project\aisNestJS\my-leaflet-Telkomsat\.angular\cache\20.2.0\my-leaflet-map\vite\deps_ssr\chunk-GRQ5DHXS.js:27991:21)
+2025-09-22 02:44:43 +07:00:     at listOnTimeout (node:internal/timers:594:17)
+2025-09-22 02:44:43 +07:00:     at process.processTimers (node:internal/timers:529:7)[39m[22m
+2025-09-22 02:44:43 +07:00: [1m[33m⚠️ Endpoint /ais-data/stats failed: fetch failed[39m[22m
+2025-09-22 02:44:43 +07:00: [1m[33m⚠️ Endpoint /telkomsat/health failed: fetch failed[39m[22m
+2025-09-22 02:44:43 +07:00: [1m[31m❌ All backend endpoints failed[39m[22m
+2025-09-22 02:44:43 +07:00: [1m[33m⚠️ Backend not available, starting REST API fallback[39m[22m
