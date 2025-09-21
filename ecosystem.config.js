@@ -1,4 +1,4 @@
-// ecosystem.config.js - FIXED to use npm
+// ecosystem.config.js - FIXED untuk Windows dengan interpreter
 const path = require('path');
 const os = require('os');
 
@@ -7,13 +7,14 @@ module.exports = {
     {
       name: 'angular-app',
       
-      // ✅ SOLUTION: Use npm instead of direct ng command
+      // ✅ SOLUTION: Add interpreter untuk Windows
       script: 'npm',
       args: ['run', 'start'],
+      interpreter: 'none',        // ✅ KEY FIX: Jangan gunakan Node.js interpreter
       
-      // ✅ Alternative method (also works):
-      // script: 'npm',
-      // args: ['start'],
+      // ✅ Alternative solution: specify full path to cmd.exe
+      // interpreter: 'cmd',
+      // args: ['/c', 'npm', 'run', 'start'],
       
       instances: 1,
       exec_mode: 'fork',
@@ -25,7 +26,7 @@ module.exports = {
       },
       
       env_production: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'production', 
         NG_CLI_ANALYTICS: 'false'
       },
       
