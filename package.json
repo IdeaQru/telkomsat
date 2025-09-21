@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --ssl --ssl-key \"C:\\Users\\user\\key.pem\" --ssl-cert \"C:\\Users\\user\\cert.pem\" --host localhost --port 4200",
+     "pm2:start": "pm2 start ecosystem.config.js",
     "build": "ng build",
     "build:prod": "ng build --output-path=../ais-maritime-backend/my-leaflet-map --configuration production",
     "build:watch": "ng build --watch --configuration development",
