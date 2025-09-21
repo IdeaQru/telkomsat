@@ -1,4 +1,4 @@
-// ecosystem.config.js - FIXED untuk Windows dengan interpreter
+// ecosystem.config.js - FIXED untuk Windows dengan npm-cli.js
 const path = require('path');
 const os = require('os');
 
@@ -7,17 +7,16 @@ module.exports = {
     {
       name: 'angular-app',
       
-      // ✅ SOLUTION: Add interpreter untuk Windows
-      script: 'npm',
+      // ✅ SOLUTION: Use npm-cli.js directly instead of npm.cmd
+      script: 'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
       args: ['run', 'start'],
-      interpreter: 'none',        // ✅ KEY FIX: Jangan gunakan Node.js interpreter
       
-      // ✅ Alternative solution: specify full path to cmd.exe
-      // interpreter: 'cmd',
-      // args: ['/c', 'npm', 'run', 'start'],
+      // ✅ Alternative dengan node.exe + npm-cli.js
+      // script: 'C:\\Program Files\\nodejs\\node.exe',
+      // args: ['C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js', 'run', 'start'],
       
       instances: 1,
-      exec_mode: 'fork',
+      exec_mode: 'fork',          // ✅ Use fork, bukan cluster untuk npm scripts
       watch: false,
       
       env: {

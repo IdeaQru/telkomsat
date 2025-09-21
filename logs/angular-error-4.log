@@ -1,0 +1,12 @@
+2025-09-22 00:49:54 +07:00: [31m✖[39m Building... [31m[FAILED: The service was stopped][39m
+2025-09-22 00:49:54 +07:00: ^C
+2025-09-22 00:49:57 +07:00: [31m✖[39m Building... [31m[FAILED: The service was stopped][39m
+2025-09-22 00:49:57 +07:00: ^C
+2025-09-22 00:50:00 +07:00: [31m✖[39m Building... [31m[FAILED: The service was stopped][39m
+2025-09-22 00:50:06 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 00:50:06 +07:00: 
+2025-09-22 00:50:06 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 00:50:06 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 00:50:06 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 00:50:06 +07:00: 
+2025-09-22 00:50:06 +07:00: [39m[22m
