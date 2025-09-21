@@ -1,0 +1,53 @@
+2025-09-22 02:18:56 +07:00: 
+2025-09-22 02:18:56 +07:00: > my-leaflet-map@0.0.0 start
+2025-09-22 02:18:56 +07:00: > ng serve --ssl --ssl-key "C:\Users\user\key.pem" --ssl-cert "C:\Users\user\cert.pem" --host 0.0.0.0 --port 4200
+2025-09-22 02:18:56 +07:00: 
+2025-09-22 02:18:59 +07:00: [1m[33m
+2025-09-22 02:18:59 +07:00: Warning: This is a simple server for use in testing or debugging Angular applications
+2025-09-22 02:18:59 +07:00: locally. It hasn't been reviewed for security issues.
+2025-09-22 02:18:59 +07:00: 
+2025-09-22 02:18:59 +07:00: Binding this server to an open connection can result in compromising your application or
+2025-09-22 02:18:59 +07:00: computer. Using a different host than the one passed to the "--host" flag might result in
+2025-09-22 02:18:59 +07:00: websocket connection issues.
+2025-09-22 02:18:59 +07:00:     [39m[22m
+2025-09-22 02:18:59 +07:00: [33m❯[39m Building...
+2025-09-22 02:19:07 +07:00: [32m✔[39m Building...
+2025-09-22 02:19:07 +07:00: [35mBrowser bundles[39m      
+2025-09-22 02:19:07 +07:00: [1mInitial chunk files[22m  [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+2025-09-22 02:19:07 +07:00: [32mstyles.css[39m           [2m | [22m[2mstyles[22m          [2m | [22m[36m125.29 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mmain.js[39m              [2m | [22m[2mmain[22m            [2m | [22m  [36m3.32 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mchunk-CZJLB7T5.js[39m    [2m | [22m[2m-[22m               [2m | [22m  [36m1.08 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: [1m [22m                    [2m | [22m[1mInitial total[22m   [2m | [22m[1m129.69 kB[22m
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: [1mLazy chunk files[22m     [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+2025-09-22 02:19:07 +07:00: [32mmap-UX6M33HN.js[39m      [2m | [22m[2mmap[22m             [2m | [22m[36m280.73 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mpoi-area-FBCZGHDR.js[39m [2m | [22m[2mpoi-area[22m        [2m | [22m[36m164.88 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mchunk-D6BHOOXW.js[39m    [2m | [22m[2m-[22m               [2m | [22m  [36m4.79 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: [35mServer bundles[39m       
+2025-09-22 02:19:07 +07:00: [1mInitial chunk files[22m  [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+2025-09-22 02:19:07 +07:00: [32mmain.server.mjs[39m      [2m | [22m[2mmain.server[22m     [2m | [22m  [36m4.57 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mserver.mjs[39m           [2m | [22m[2mserver[22m          [2m | [22m  [36m1.79 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mchunk-XZXRA2IB.mjs[39m   [2m | [22m[2m-[22m               [2m | [22m  [36m1.11 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mpolyfills.server.mjs[39m [2m | [22m[2mpolyfills.server[22m[2m | [22m[36m243 bytes[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: [1mLazy chunk files[22m     [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+2025-09-22 02:19:07 +07:00: [32mmap-KRGG2YKN.mjs[39m     [2m | [22m[2mmap[22m             [2m | [22m[36m280.77 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mpoi-area-34ZSNEEV.mjs[39m[2m | [22m[2mpoi-area[22m        [2m | [22m[36m164.92 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: [32mchunk-U7BSXZND.mjs[39m   [2m | [22m[2m-[22m               [2m | [22m  [36m4.83 kB[39m[2m | [22m
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: Application bundle generation complete. [8.199 seconds]
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: VesselLoadingComponent is not used within the template of MapComponent[0m [1m[35m[plugin angular-compiler][0m
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00:     src/app/map/map.ts:69:4:
+2025-09-22 02:19:07 +07:00: [37m      69 │     [32mVesselLoadingComponent[37m,
+2025-09-22 02:19:07 +07:00:          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+2025-09-22 02:19:07 +07:00: 
+2025-09-22 02:19:07 +07:00: [39m[22m
+2025-09-22 02:19:07 +07:00: Watch mode enabled. Watching for file changes...
+2025-09-22 02:19:07 +07:00: NOTE: Raw file sizes do not reflect development server per-request transformations.
+2025-09-22 02:19:08 +07:00:   [32m➜[39m  [1mLocal[22m:   [36mhttps://localhost:[1m4200[22m/[39m
+2025-09-22 02:19:08 +07:00:   [32m➜[39m  [1mNetwork[22m: [36mhttps://192.168.1.2:[1m4200[22m/[39m
