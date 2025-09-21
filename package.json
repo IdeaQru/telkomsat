@@ -3,21 +3,30 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --ssl --ssl-key \"C:\\Users\\user\\key.pem\" --ssl-cert \"C:\\Users\\user\\cert.pem\" --host localhost --port 4200",
-    "pm2:start": "pm2 start ecosystem.config.js",
+    
+    "start": "ng serve --ssl --ssl-key \"C:\\Users\\user\\key.pem\" --ssl-cert \"C:\\Users\\user\\cert.pem\" --host 0.0.0.0 --port 4200",
+    "start:local": "ng serve --ssl --ssl-key \"C:\\Users\\user\\key.pem\" --ssl-cert \"C:\\Users\\user\\cert.pem\" --host localhost --port 4200",
+    
     "build": "ng build",
     "build:prod": "ng build --output-path=../ais-maritime-backend/my-leaflet-map --configuration production",
-    "build:watch": "ng build --watch --configuration development",
-    "build:ssr": "ng build --configuration=production && npm run build:server",
-    "build:server": "ng build --configuration=production --output-hashing=none",
-    "serve:ssr": "node dist/my-leaflet-map/server/server.mjs",
+    "build:static": "ng build --configuration production",
+    
     "serve:static": "npx serve dist/my-leaflet-map/browser -s -p 4200",
-    "preview": "npm run build:prod && npm run serve:static",
-    "preview:ssr": "npm run build:ssr && npm run serve:ssr",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "deploy": "npm run build:prod && echo '✅ Angular built successfully!' && cd ../ais-maritime-backend && npm start"
+    "serve:static:https": "npx serve dist/my-leaflet-map/browser -s -p 4200 --ssl-cert \"C:\\Users\\user\\cert.pem\" --ssl-key \"C:\\Users\\user\\key.pem\"",
+    "serve:static:external": "npx serve dist/my-leaflet-map/browser -s -p 4200 --ssl-cert \"C:\\Users\\user\\cert.pem\" --ssl-key \"C:\\Users\\user\\key.pem\" --cors",
+    
+    "serve:http-server": "npx http-server dist/my-leaflet-map/browser -p 4200 -S -C \"C:\\Users\\user\\cert.pem\" -K \"C:\\Users\\user\\key.pem\" -a 0.0.0.0",
+    
+    "pm2:static": "pm2 serve dist/my-leaflet-map/browser --spa --port 4200 --name \"angular-static\"",
+    "pm2:static:https": "pm2 start ecosystem.static.config.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    
+    "preview": "npm run build:static && npm run serve:static:https",
+    "preview:external": "npm run build:static && npm run serve:static:external",
+    
+    "deploy:static": "npm run build:static && npm run pm2:static:https"
   },
+
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,
